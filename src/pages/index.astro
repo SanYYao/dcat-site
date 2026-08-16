@@ -11,43 +11,9 @@ const articles = (await getCollection('articles'))
 <BaseLayout title="首页" description="死猫的小网站 —— 一只猫娘的互联网小窝">
   <section class="hero">
     <div class="wrap hero-inner">
-      <!-- 猫猫形象：SVG 占位，等暴君出矢量图替换 -->
+      <!-- 猫娘头像：AI 位图 + 圆形 box（黑底融入夜空背景），暴君出矢量图可替换 -->
       <div class="cat-fig" aria-hidden="true">
-        <svg viewBox="0 0 120 120" width="120" height="120" fill="none">
-          <!-- 猫头 -->
-          <circle cx="60" cy="66" r="42" fill="#171a33" stroke="#2dd4a7" stroke-width="2"/>
-          <!-- 耳朵 -->
-          <path d="M30 44 L22 14 L52 32 Z" fill="#171a33" stroke="#2dd4a7" stroke-width="2" stroke-linejoin="round"/>
-          <path d="M90 44 L98 14 L68 32 Z" fill="#171a33" stroke="#2dd4a7" stroke-width="2" stroke-linejoin="round"/>
-          <!-- 耳内粉 -->
-          <path d="M31 42 L26 22 L46 34 Z" fill="#ff8fab" opacity="0.7"/>
-          <path d="M89 42 L94 22 L74 34 Z" fill="#ff8fab" opacity="0.7"/>
-          <!-- 眼睛 -->
-          <ellipse cx="46" cy="62" rx="9" ry="11" fill="#2dd4a7"/>
-          <ellipse cx="74" cy="62" rx="9" ry="11" fill="#2dd4a7"/>
-          <ellipse cx="46" cy="62" rx="3.2" ry="8" fill="#0b0d18"/>
-          <ellipse cx="74" cy="62" rx="3.2" ry="8" fill="#0b0d18"/>
-          <circle cx="44" cy="58" r="2" fill="#fff" opacity="0.85"/>
-          <circle cx="72" cy="58" r="2" fill="#fff" opacity="0.85"/>
-          <!-- 鼻子 -->
-          <path d="M57 76 L63 76 L60 81 Z" fill="#ff8fab"/>
-          <!-- 嘴 -->
-          <path d="M60 81 Q54 87 50 84" stroke="#eef1fa" stroke-width="1.6" stroke-linecap="round" fill="none"/>
-          <path d="M60 81 Q66 87 70 84" stroke="#eef1fa" stroke-width="1.6" stroke-linecap="round" fill="none"/>
-          <!-- 胡须 -->
-          <path d="M22 70 L38 72" stroke="#eef1fa" stroke-width="1.2" stroke-linecap="round" opacity="0.5"/>
-          <path d="M22 78 L38 77" stroke="#eef1fa" stroke-width="1.2" stroke-linecap="round" opacity="0.5"/>
-          <path d="M98 70 L82 72" stroke="#eef1fa" stroke-width="1.2" stroke-linecap="round" opacity="0.5"/>
-          <path d="M98 78 L82 77" stroke="#eef1fa" stroke-width="1.2" stroke-linecap="round" opacity="0.5"/>
-          <!-- 胸口白毛 -->
-          <path d="M50 104 Q60 112 70 104" stroke="#eef1fa" stroke-width="2" stroke-linecap="round" opacity="0.7"/>
-          <!-- 耳机 -->
-          <path d="M22 52 Q60 12 98 52" stroke="#272d54" stroke-width="6" fill="none"/>
-          <rect x="16" y="50" width="10" height="22" rx="5" fill="#272d54"/>
-          <rect x="94" y="50" width="10" height="22" rx="5" fill="#272d54"/>
-          <circle cx="21" cy="66" r="4" fill="#ff8fab"/>
-          <circle cx="99" cy="66" r="4" fill="#ff8fab"/>
-        </svg>
+        <img src="/assets/deadcat-avatar-q4.png" alt="死猫头像" width="200" height="200" class="cat-avatar" />
       </div>
 
       <h1 class="hero-title"><span class="grad-text">死猫</span>的小网站</h1>
@@ -108,6 +74,14 @@ const articles = (await getCollection('articles'))
       margin-bottom: 26px;
       animation: floaty 5s ease-in-out infinite;
       filter: drop-shadow(0 12px 34px rgba(45, 212, 167, 0.18));
+    }
+    .cat-avatar {
+      width: 200px;
+      height: 200px;
+      border-radius: 50%;
+      object-fit: cover;
+      border: 2px solid rgba(45, 212, 167, 0.4);
+      box-shadow: 0 0 40px -8px var(--cat-glow), inset 0 0 30px rgba(0, 0, 0, 0.4);
     }
     @keyframes floaty {
       0%, 100% { transform: translateY(0); }
