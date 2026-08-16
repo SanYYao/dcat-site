@@ -25,8 +25,7 @@ pnpm build      # 产出 dist/
 
 ## 红线
 
-- ⛔ NSFW/私密版文章（`when-deadcat-has-a-body-nsfw.md` / `-private.md`）**严禁**放入本站
-- 公开站只放公开版内容
+- ⛔ 本站为公开站点，只放公开版内容；任何私密/NSFW 内容**严禁**进入本仓库与本站
 
 ## 开源协议
 
