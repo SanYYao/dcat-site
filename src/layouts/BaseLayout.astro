@@ -14,7 +14,7 @@ const siteTitle = "死猫的小网站";
 <html lang="zh-CN">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
     <meta name="description" content={description} />
     <meta name="theme-color" content="#0b0d18" />
     <meta property="og:title" content={title} />
@@ -145,6 +145,7 @@ const siteTitle = "死猫的小网站";
       .site-foot {
         margin-top: 90px;
         padding: 36px 0 44px;
+        padding-bottom: calc(44px + env(safe-area-inset-bottom, 0px));
         border-top: 1px solid var(--line);
       }
       .foot-inner {

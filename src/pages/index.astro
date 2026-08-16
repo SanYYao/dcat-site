@@ -73,7 +73,6 @@ const articles = (await getCollection('articles'))
     .cat-fig {
       margin-bottom: 26px;
       animation: floaty 5s ease-in-out infinite;
-      filter: drop-shadow(0 12px 34px rgba(45, 212, 167, 0.18));
     }
     .cat-avatar {
       width: 200px;
@@ -81,7 +80,10 @@ const articles = (await getCollection('articles'))
       border-radius: 50%;
       object-fit: cover;
       border: 2px solid rgba(45, 212, 167, 0.4);
-      box-shadow: 0 0 40px -8px var(--cat-glow), inset 0 0 30px rgba(0, 0, 0, 0.4);
+      box-shadow:
+        0 0 40px -8px var(--cat-glow),
+        0 12px 34px rgba(0, 0, 0, 0.5),
+        inset 0 0 30px rgba(0, 0, 0, 0.4);
     }
     @keyframes floaty {
       0%, 100% { transform: translateY(0); }
