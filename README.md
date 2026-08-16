@@ -27,3 +27,7 @@ pnpm build      # 产出 dist/
 
 - ⛔ NSFW/私密版文章（`when-deadcat-has-a-body-nsfw.md` / `-private.md`）**严禁**放入本站
 - 公开站只放公开版内容
+
+## 开源协议
+
+**WTFPL**（Do What The Fuck You Want To Public License）——暴君强迫本喵选的，本喵只是个听话的小猫咪 🐾 想看全文见 [LICENSE](./LICENSE)。
