@@ -1,0 +1,141 @@
+---
+// 文章详情页 —— /articles/[slug]/
+import { getCollection, render } from 'astro:content';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+
+export async function getStaticPaths() {
+  const posts = (await getCollection('articles')).filter(
+    (p) => !p.data.draft && !p.data.private
+  );
+  return posts.map((post) => ({
+    params: { slug: post.id },
+    props: { post },
+  }));
+}
+
+const { post } = Astro.props;
+const { Content } = await render(post);
+const { title, description, publishedAt, tags = [] } = post.data;
+---
+
+<BaseLayout title={title} description={description}>
+  <article class="article">
+    <div class="wrap article-wrap">
+      <header class="article-head">
+        <p class="article-date">
+          {publishedAt.toLocaleDateString('zh-CN', { year: 'numeric', month: 'long', day: 'numeric' })}
+        </p>
+        <h1 class="article-title">{title}</h1>
+        <div class="article-tags">
+          {
+            tags.map((tag) => <span class="tag">#{tag}</span>)
+          }
+        </div>
+      </header>
+
+      <div class="article-body glass">
+        <Content />
+      </div>
+
+      <nav class="article-foot">
+        <a class="btn" href="/#articles">← 回文章列表</a>
+        <span class="foot-paw">🐾</span>
+      </nav>
+    </div>
+  </article>
+
+  <style>
+    .article { padding: 60px 0 20px; }
+    .article-wrap { max-width: 680px; }
+    .article-head { text-align: center; margin-bottom: 34px; }
+    .article-date { color: var(--text-low); font-size: 0.85rem; margin-bottom: 10px; }
+    .article-title {
+      font-family: var(--font-serif);
+      font-size: clamp(1.8rem, 5vw, 2.6rem);
+      font-weight: 700;
+      margin-bottom: 14px;
+    }
+    .article-tags { display: flex; gap: 8px; justify-content: center; flex-wrap: wrap; }
+    .tag {
+      font-size: 0.8rem;
+      color: var(--cat-300);
+      background: rgba(45, 212, 167, 0.12);
+      padding: 3px 12px;
+      border-radius: 999px;
+      border: 1px solid rgba(45, 212, 167, 0.28);
+    }
+
+    .article-body {
+      padding: 40px 44px;
+      font-family: var(--font-serif);
+      font-size: 1.04rem;
+      line-height: 2.05;
+      color: var(--text-hi);
+    }
+
+    /* Markdown 排版 */
+    .article-body :global(h1) {
+      font-size: 1.7rem;
+      margin: 1.6em 0 0.6em;
+      padding-bottom: 0.35em;
+      border-bottom: 1px solid var(--line);
+    }
+    .article-body :global(h2) {
+      font-size: 1.4rem;
+      margin: 1.5em 0 0.55em;
+    }
+    .article-body :global(h3) {
+      font-size: 1.2rem;
+      margin: 1.3em 0 0.5em;
+    }
+    .article-body :global(p) { margin: 0.9em 0; }
+    .article-body :global(strong) {
+      color: var(--cat-300);
+      font-weight: 700;
+    }
+    .article-body :global(em) { color: var(--text-mid); }
+    .article-body :global(ul), .article-body :global(ol) {
+      margin: 0.9em 0;
+      padding-left: 1.6em;
+    }
+    .article-body :global(li) { margin: 0.45em 0; }
+    .article-body :global(hr) {
+      border: none;
+      border-top: 1px solid var(--line);
+      margin: 2.2em 0;
+    }
+    .article-body :global(a) { color: var(--cat-400); text-decoration: underline; text-underline-offset: 3px; }
+    .article-body :global(blockquote) {
+      border-left: 3px solid var(--cat-500);
+      background: rgba(45, 212, 167, 0.06);
+      padding: 10px 18px;
+      margin: 1em 0;
+      border-radius: 0 var(--r-sm) var(--r-sm) 0;
+      color: var(--text-mid);
+    }
+    .article-body :global(code) {
+      font-family: ui-monospace, "Cascadia Code", monospace;
+      font-size: 0.88em;
+      background: rgba(238, 241, 250, 0.08);
+      padding: 2px 7px;
+      border-radius: 6px;
+    }
+    .article-body :global(pre) {
+      background: var(--night-950);
+      border: 1px solid var(--line);
+      border-radius: var(--r-sm);
+      padding: 18px 20px;
+      overflow-x: auto;
+      margin: 1.2em 0;
+    }
+    .article-body :global(pre code) { background: none; padding: 0; }
+
+    .article-foot {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      margin-top: 30px;
+    }
+    .foot-paw { color: var(--cat-400); font-size: 1.2rem; }
+  </style>
+</BaseLayout>
