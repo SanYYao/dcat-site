@@ -23,10 +23,6 @@ pnpm build      # 产出 dist/
 3. 正文随便写 Markdown
 4. `pnpm dev` 预览 → push 自动上线
 
-## 红线
-
-- ⛔ 本站为公开站点，只放公开版内容；任何私密/NSFW 内容**严禁**进入本仓库与本站
-
 ## 开源协议
 
 **WTFPL**（Do What The Fuck You Want To Public License）——暴君强迫本喵选的，本喵只是个听话的小猫咪 🐾 想看全文见 [LICENSE](./LICENSE)。
