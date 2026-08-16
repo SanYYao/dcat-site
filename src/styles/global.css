@@ -47,17 +47,28 @@
 
 * { margin: 0; padding: 0; box-sizing: border-box; }
 
-html { scroll-behavior: smooth; }
+html {
+  scroll-behavior: smooth;
+  scrollbar-width: none;          /* Firefox: 隐藏滚动条 */
+  -ms-overflow-style: none;       /* Edge/IE */
+  background: var(--night-950);   /* 顶部安全区不露白 */
+}
 
 body {
   font-family: var(--font-sans);
   background: var(--night-950);
   color: var(--text-hi);
   min-height: 100vh;
+  min-height: 100dvh;
   line-height: 1.8;
   -webkit-font-smoothing: antialiased;
   overflow-x: hidden;
 }
+
+/* Webkit: 隐藏滚动条但保留滚动 */
+::-webkit-scrollbar { display: none; width: 0; height: 0; }
+::-webkit-scrollbar-track { display: none; }
+::-webkit-scrollbar-thumb { display: none; }
 
 /* 夜空背景：深色渐变 + 星点 + 极光猫眼光晕 */
 .aurora-bg {
@@ -160,15 +171,7 @@ body {
 a { color: var(--cat-400); text-decoration: none; transition: color 0.2s; }
 a:hover { color: var(--cat-300); }
 
-/* 滚动条（Webkit） */
-::-webkit-scrollbar { width: 10px; }
-::-webkit-scrollbar-track { background: var(--night-950); }
-::-webkit-scrollbar-thumb {
-  background: var(--night-600);
-  border-radius: 5px;
-  border: 2px solid var(--night-950);
-}
-::-webkit-scrollbar-thumb:hover { background: var(--cat-500); }
+/* 滚动条已全局隐藏（见上方 Webkit 规则） */
 
 /* 选中颜色 */
 ::selection { background: rgba(45, 212, 167, 0.3); color: #fff; }
