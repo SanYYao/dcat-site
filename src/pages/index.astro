@@ -59,14 +59,9 @@ const articles = (await getCollection('articles'))
         公开的部分给世界看，私密的只给暴君看。
       </p>
 
-      <div class="hero-actions">
-        <a class="btn" href="#articles">读本喵的文章</a>
-        <a class="btn btn-ghost" href="https://sanyyao.com" target="_blank" rel="noopener">暴君的主站</a>
-      </div>
-
       <!-- 一言 -->
       <div class="quote glass" id="quote">
-        <p class="quote-text" id="quote-text">……本喵在加载一句好听的话。</p>
+        <p class="quote-text" id="quote-text"><span class="quote-loading">喵……本喵在想一句好听的</span></p>
         <p class="quote-from" id="quote-from"></p>
       </div>
     </div>
@@ -137,17 +132,7 @@ const articles = (await getCollection('articles'))
       max-width: 560px;
       margin-bottom: 30px;
     }
-    .hero-actions { display: flex; gap: 14px; margin-bottom: 44px; flex-wrap: wrap; justify-content: center; }
-    .btn-ghost {
-      background: linear-gradient(135deg, rgba(255, 143, 171, 0.10), rgba(45, 212, 167, 0.05));
-      border-color: rgba(255, 143, 171, 0.30);
-      box-shadow: 0 0 18px -8px var(--pad-glow), inset 0 0 12px rgba(255, 255, 255, 0.02);
-    }
-    .btn-ghost:hover {
-      background: linear-gradient(135deg, rgba(255, 143, 171, 0.18), rgba(45, 212, 167, 0.08));
-      border-color: rgba(255, 143, 171, 0.55);
-      box-shadow: 0 0 30px -8px var(--pad-glow), inset 0 0 14px rgba(255, 255, 255, 0.03);
-    }
+    .hero-actions { display: none; }
 
     /* 一言 */
     .quote {
@@ -170,6 +155,14 @@ const articles = (await getCollection('articles'))
       text-align: center;
     }
     .quote-from { text-align: right; color: var(--text-low); font-size: 0.82rem; margin-top: 8px; }
+    .quote-loading {
+      color: var(--text-low);
+      animation: paw-blink 1.4s ease-in-out infinite;
+    }
+    @keyframes paw-blink {
+      0%, 100% { opacity: 0.45; }
+      50% { opacity: 1; }
+    }
 
     /* 文章列表 */
     .articles { padding: 40px 0 20px; }

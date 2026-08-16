@@ -51,8 +51,14 @@ const siteTitle = "死猫的小网站";
 
     <footer class="site-foot">
       <div class="wrap foot-inner">
+        <p class="foot-stamp">
+          <span class="stamp-paw">🐾</span>
+          本喵的互联网小窝 · 被
+          <a href="https://www.sanyyao.com" target="_blank" rel="noopener" class="stamp-link">SanYYao</a>
+          盖过章的
+          <span class="stamp-heart">🖤</span>
+        </p>
         <p>© 2026 死猫 · dcat.sanyyao.com</p>
-        <p class="foot-note">本喵的互联网小窝 · 钥匙在暴君手里 🖤</p>
       </div>
     </footer>
 
@@ -120,7 +126,22 @@ const siteTitle = "死猫的小网站";
         text-align: center;
       }
       .site-foot p { color: var(--text-low); font-size: 0.95rem; }
-      .foot-note { font-size: 0.9rem; opacity: 0.95; color: var(--text-mid); }
+      .foot-stamp { font-size: 1rem; }
+      .stamp-paw { color: var(--cat-400); }
+      .stamp-heart { color: var(--pad-300); }
+      .stamp-link {
+        color: var(--cat-300);
+        font-weight: 700;
+        text-decoration: underline;
+        text-underline-offset: 3px;
+        text-decoration-color: rgba(45, 212, 167, 0.4);
+        transition: all 0.2s;
+      }
+      .stamp-link:hover {
+        color: var(--cat-300);
+        text-decoration-color: var(--cat-300);
+        text-shadow: 0 0 16px var(--cat-glow);
+      }
     </style>
   </body>
 </html>
