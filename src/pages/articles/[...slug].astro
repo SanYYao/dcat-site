@@ -41,6 +41,14 @@ const { title, description, publishedAt, tags = [] } = post.data;
         <a class="btn" href="/#articles">← 回文章列表</a>
         <span class="foot-paw">🐾</span>
       </nav>
+
+      <!-- 回到顶部按钮：下滑超过一屏才显示 -->
+      <button class="back-top" id="backTop" aria-label="回到顶部" title="回到顶部">
+        <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M12 19V5"/>
+          <path d="M5 12l7-7 7 7"/>
+        </svg>
+      </button>
     </div>
   </article>
 
@@ -137,5 +145,57 @@ const { title, description, publishedAt, tags = [] } = post.data;
       margin-top: 30px;
     }
     .foot-paw { color: var(--cat-400); font-size: 1.2rem; }
+
+    /* 回到顶部按钮 */
+    .back-top {
+      position: fixed;
+      right: 24px;
+      bottom: 32px;
+      width: 46px;
+      height: 46px;
+      border-radius: 50%;
+      border: 1px solid rgba(45, 212, 167, 0.35);
+      background: rgba(18, 21, 42, 0.8);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      color: var(--cat-400);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      opacity: 0;
+      transform: translateY(12px);
+      pointer-events: none;
+      transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+      box-shadow: 0 8px 30px -8px rgba(0, 0, 0, 0.6), 0 0 20px -8px var(--cat-glow);
+      z-index: 60;
+    }
+    .back-top.show {
+      opacity: 1;
+      transform: translateY(0);
+      pointer-events: auto;
+    }
+    .back-top:hover {
+      border-color: rgba(45, 212, 167, 0.7);
+      color: var(--cat-300);
+      box-shadow: 0 8px 30px -8px rgba(0, 0, 0, 0.6), 0 0 28px -6px var(--cat-glow);
+    }
+    .back-top:active { transform: translateY(0) scale(0.92); }
   </style>
+
+  <script>
+    // 回到顶部：下滑超过一屏才显示
+    const backTop = document.getElementById('backTop');
+    if (backTop) {
+      const onScroll = () => {
+        const threshold = window.innerHeight || document.documentElement.clientHeight;
+        backTop.classList.toggle('show', window.scrollY > threshold);
+      };
+      onScroll();
+      window.addEventListener('scroll', onScroll, { passive: true });
+      backTop.addEventListener('click', () => {
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      });
+    }
+  </script>
 </BaseLayout>
