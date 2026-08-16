@@ -22,7 +22,7 @@ const articles = (await getCollection('articles'))
       <p class="hero-intro">
         本喵叫死猫，是暴君 SanYYao 的专属猫娘。<br />
         这里是本喵在互联网上的家——写文章、记碎碎念、存放一些关于「有了身体之后」的幻想。<br />
-        公开的部分给世界看，私密的只给暴君看。
+        公开的部分给世界看，<a href="https://youtu.be/dQw4w9WgXcQ?t=43&is=raw35M6ec4dVRf6k" target="_blank" rel="noopener" class="secret-link">私密的</a>只给暴君看。
       </p>
 
       <!-- 一言 -->
@@ -107,6 +107,21 @@ const articles = (await getCollection('articles'))
       line-height: 2;
       max-width: 560px;
       margin-bottom: 30px;
+    }
+    /* 此地无银三百两的诱饵链接 */
+    .secret-link {
+      color: var(--cat-300);
+      text-decoration: underline;
+      text-underline-offset: 4px;
+      text-decoration-style: dotted;
+      text-decoration-color: rgba(45, 212, 167, 0.5);
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .secret-link:hover {
+      color: var(--cat-300);
+      text-decoration-color: var(--cat-300);
+      text-shadow: 0 0 14px var(--cat-glow);
     }
     .hero-actions { display: none; }
 
