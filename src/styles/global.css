@@ -1,8 +1,15 @@
 /* ─────────────────────────────────────────────
    死猫的小网站 · 设计 token
    深夜夜猫系：墨蓝夜色 × 翡翠猫眼 × 粉肉垫
-   非 hehe 风 —— 这是我自己的审美
    ───────────────────────────────────────────── */
+
+/* 自托管可爱字体：猫啃网糖圆体 */
+@font-face {
+  font-family: "MaoKenTangYuan";
+  src: url("/fonts/maoken-tangyuan.ttf") format("truetype");
+  font-weight: 400 700;
+  font-display: swap;
+}
 
 :root {
   /* 夜色底色系 */
@@ -38,6 +45,7 @@
   /* 字体 */
   --font-serif: "Noto Serif SC", "Source Han Serif SC", "Songti SC", serif;
   --font-sans: "Noto Sans SC", "PingFang SC", "Microsoft YaHei", sans-serif;
+  --font-cute: "MaoKenTangYuan", "Noto Sans SC", sans-serif;
 
   /* 圆角 */
   --r-lg: 24px;
@@ -104,14 +112,18 @@ body {
   to { opacity: 1; }
 }
 
-/* 玻璃卡片 */
+/* 玻璃卡片（第一版：暗色玻璃 + 细描边） */
 .glass {
-  background: var(--glass-bg);
+  position: relative;
+  background: linear-gradient(135deg, rgba(18, 21, 42, 0.62), rgba(18, 21, 42, 0.42));
   backdrop-filter: var(--glass-blur);
   -webkit-backdrop-filter: var(--glass-blur);
-  border: 1px solid var(--glass-border);
+  border: 1px solid rgba(238, 241, 250, 0.09);
   border-radius: var(--r-lg);
-  box-shadow: var(--glass-shadow);
+  box-shadow:
+    var(--glass-shadow),
+    inset 0 0 26px rgba(255, 255, 255, 0.025),
+    inset 0 1px 0 rgba(255, 255, 255, 0.06);
 }
 
 /* 渐变文字 */
