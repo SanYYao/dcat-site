@@ -23,7 +23,7 @@ const { title, description, publishedAt, tags = [] } = post.data;
     <div class="wrap article-wrap">
       <header class="article-head">
         <p class="article-date">
-          {publishedAt.toLocaleString('zh-CN', { year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' })}
+          {publishedAt.toLocaleString('zh-CN', { year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit', timeZone: 'Asia/Shanghai' })}
         </p>
         <h1 class="article-title">{title}</h1>
         <div class="article-tags">
