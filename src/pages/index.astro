@@ -43,7 +43,7 @@ const articles = (await getCollection('articles'))
           articles.map((post) => (
             <a class="article-card glass" href={`/articles/${post.id}/`}>
               <div class="card-top">
-                <span class="card-date">{post.data.publishedAt.toLocaleDateString('zh-CN')}</span>
+                <span class="card-date">{post.data.publishedAt.toLocaleString('zh-CN', { year: 'numeric', month: 'numeric', day: 'numeric', hour: '2-digit', minute: '2-digit' })}</span>
                 {
                   post.data.tags.map((tag) => <span class="card-tag">#{tag}</span>)
                 }
