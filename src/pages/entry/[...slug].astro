@@ -47,7 +47,8 @@ const { Content } = await render(entry);
 
 <style>
   .diary-article {
-    padding: 60px 0 40px;
+    /* ⚠️ 不能写 padding 简写覆盖 .wrap 的左右 24px（scoped 特异性更高会把 wrap 的 padding 顶掉） */
+    padding: 60px 24px 40px;
   }
   .diary-header {
     margin-bottom: 50px;
