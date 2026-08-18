@@ -35,7 +35,7 @@ const { Content } = await render(entry);
       <h1 class="diary-title">{entry.data.title}</h1>
     </header>
 
-    <div class="diary-body">
+    <div class="diary-body glass">
       <Content />
     </div>
 
@@ -77,7 +77,7 @@ const { Content } = await render(entry);
     color: var(--cat-300);
   }
 
-  /* 日记正文：衬线字体更阅读感 */
+  /* 日记正文：衬线字体更阅读感，玻璃卡片包裹 */
   .diary-body {
     font-family: var(--font-serif);
     font-size: 1.05rem;
@@ -85,6 +85,8 @@ const { Content } = await render(entry);
     color: var(--text-hi);
     max-width: 680px;
     margin: 0 auto;
+    padding: 40px 44px;
+    border-radius: var(--r-lg);
   }
   .diary-body p {
     margin-bottom: 1.4em;
