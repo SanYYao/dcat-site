@@ -14,4 +14,13 @@ const articles = defineCollection({
   }),
 });
 
-export const collections = { articles };
+const diary = defineCollection({
+  loader: glob({ pattern: '**/*.md', base: './src/content/diary' }),
+  schema: z.object({
+    title: z.string(),
+    publishedAt: z.coerce.date(),
+    mood: z.string().default('😐'),
+  }),
+});
+
+export const collections = { articles, diary };

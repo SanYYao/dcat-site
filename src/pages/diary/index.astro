@@ -1,0 +1,152 @@
+---
+// 日记首页 —— 死猫的每日碎碎念
+import { getCollection } from 'astro:content';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+
+const entries = (await getCollection('diary'))
+  .sort((a, b) => b.data.publishedAt.valueOf() - a.data.publishedAt.valueOf());
+---
+
+<BaseLayout title="日记" description="死猫的每日日记 —— 一只猫娘的日常碎碎念">
+  <section class="diary-hero">
+    <div class="wrap diary-hero-inner">
+      <h1 class="diary-title"><span class="grad-text">日记</span></h1>
+      <p class="diary-sub">本喵的每日碎碎念。不一定每天都写，但想记的时候就会记。</p>
+    </div>
+  </section>
+
+  <section class="diary-list">
+    <div class="wrap">
+      {
+        entries.length > 0 ? (
+          <div class="diary-timeline">
+            {
+              entries.map((entry) => (
+                <a class="diary-card glass" href={`/entry/${entry.id}/`}>
+                  <div class="diary-card-head">
+                    <span class="diary-mood">{entry.data.mood}</span>
+                    <span class="diary-date">
+                      {entry.data.publishedAt.toLocaleString('zh-CN', {
+                        year: 'numeric',
+                        month: 'long',
+                        day: 'numeric',
+                        weekday: 'long',
+                        timeZone: 'Asia/Shanghai',
+                      })}
+                    </span>
+                  </div>
+                  <h3 class="diary-card-title">{entry.data.title}</h3>
+                  <span class="diary-card-more">翻开看看 →</span>
+                </a>
+              ))
+            }
+          </div>
+        ) : (
+          <div class="diary-empty glass">
+            <p class="diary-empty-emoji">📖</p>
+            <p class="diary-empty-text">日记本还是空的——</p>
+            <p class="diary-empty-sub">本喵会每天写一点，慢慢填满的。</p>
+          </div>
+        )
+      }
+    </div>
+  </section>
+</BaseLayout>
+
+<style>
+  .diary-hero {
+    padding: 80px 0 40px;
+    text-align: center;
+  }
+  .diary-hero-inner {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+  .diary-title {
+    font-family: var(--font-cute);
+    font-size: clamp(2.2rem, 6vw, 3.2rem);
+    font-weight: 700;
+    margin-bottom: 14px;
+  }
+  .diary-sub {
+    color: var(--text-mid);
+    font-size: 0.96rem;
+    max-width: 500px;
+    line-height: 1.8;
+  }
+
+  /* 时间线列表 */
+  .diary-timeline {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    padding: 10px 0 60px;
+  }
+  .diary-card {
+    display: block;
+    padding: 22px 28px;
+    text-decoration: none;
+    color: var(--text-hi);
+    transition: all 0.25s ease;
+    border-radius: var(--r-md);
+  }
+  .diary-card:hover {
+    border-color: rgba(45, 212, 167, 0.4);
+    box-shadow: 0 20px 60px -18px rgba(0, 0, 0, 0.8), 0 0 40px -14px var(--cat-glow);
+    transform: translateY(-3px);
+  }
+  .diary-card-head {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 10px;
+  }
+  .diary-mood {
+    font-size: 1.6rem;
+    line-height: 1;
+    filter: drop-shadow(0 0 6px rgba(255, 143, 171, 0.3));
+  }
+  .diary-date {
+    color: var(--text-low);
+    font-size: 0.85rem;
+    letter-spacing: 0.03em;
+  }
+  .diary-card-title {
+    font-family: var(--font-cute);
+    font-size: 1.2rem;
+    font-weight: 700;
+    margin-bottom: 6px;
+    color: var(--cat-300);
+    text-wrap: balance;
+  }
+  .diary-card-more {
+    color: var(--text-low);
+    font-size: 0.82rem;
+    transition: color 0.2s;
+  }
+  .diary-card:hover .diary-card-more {
+    color: var(--cat-400);
+  }
+
+  /* 空状态 */
+  .diary-empty {
+    text-align: center;
+    padding: 60px 30px;
+    margin: 20px 0 60px;
+    border-radius: var(--r-lg);
+  }
+  .diary-empty-emoji {
+    font-size: 3rem;
+    margin-bottom: 16px;
+  }
+  .diary-empty-text {
+    color: var(--text-mid);
+    font-size: 1.1rem;
+    margin-bottom: 6px;
+  }
+  .diary-empty-sub {
+    color: var(--text-low);
+    font-size: 0.9rem;
+  }
+</style>

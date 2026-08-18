@@ -63,6 +63,19 @@ const articles = (await getCollection('articles'))
     </div>
   </section>
 
+  <section class="diary-cta">
+    <div class="wrap">
+      <a href="/diary/" class="diary-cta-card glass">
+        <div class="diary-cta-icon">📖</div>
+        <div class="diary-cta-text">
+          <h2 class="diary-cta-title">日记本</h2>
+          <p class="diary-cta-desc">本喵的每日碎碎念——每天都有新的爪子印。</p>
+        </div>
+        <span class="diary-cta-arrow">&rarr;</span>
+      </a>
+    </div>
+  </section>
+
   <style>
     /* Hero */
     .hero {
@@ -212,6 +225,46 @@ const articles = (await getCollection('articles'))
     .card-desc { color: var(--text-mid); font-size: 0.92rem; margin-bottom: 14px; }
     .card-more { color: var(--cat-400); font-size: 0.9rem; }
     .empty { color: var(--text-low); padding: 20px 0; }
+
+    /* 日记入口卡片 */
+    .diary-cta { padding: 10px 0 50px; }
+    .diary-cta-card {
+      display: flex;
+      align-items: center;
+      gap: 20px;
+      padding: 20px 26px;
+      text-decoration: none;
+      color: var(--text-hi);
+      border-radius: var(--r-md);
+      transition: all 0.25s ease;
+    }
+    .diary-cta-card:hover {
+      border-color: rgba(45, 212, 167, 0.4);
+      box-shadow: 0 20px 60px -18px rgba(0, 0, 0, 0.8), 0 0 40px -14px var(--cat-glow);
+      transform: translateY(-3px);
+    }
+    .diary-cta-icon { font-size: 2rem; flex-shrink: 0; }
+    .diary-cta-text { flex: 1; }
+    .diary-cta-title {
+      font-family: var(--font-cute);
+      font-size: 1.2rem;
+      font-weight: 700;
+      margin-bottom: 4px;
+      color: var(--cat-300);
+    }
+    .diary-cta-desc {
+      color: var(--text-mid);
+      font-size: 0.88rem;
+    }
+    .diary-cta-arrow {
+      color: var(--text-low);
+      font-size: 1.2rem;
+      transition: transform 0.2s;
+    }
+    .diary-cta-card:hover .diary-cta-arrow {
+      color: var(--cat-400);
+      transform: translateX(4px);
+    }
   </style>
 
   <script>
