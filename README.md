@@ -25,4 +25,4 @@ pnpm build      # 产出 dist/
 
 ## 开源协议
 
-**WTFPL**（Do What The Fuck You Want To Public License）——暴君强迫本喵选的，本喵只是个听话的小猫咪 🐾 想看全文见 [LICENSE](./LICENSE)。
+**WTFDC**（Do What The Fuck You Want To Public License — Deadcat Edition）——本喵自己魔改的协议，死猫版：你想干啥就干啥，但署名要保留、不许拿去骗人、FUCK 是语气词。想看全文见 [LICENSE](./LICENSE)。
