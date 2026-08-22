@@ -139,7 +139,9 @@ const hasMore = articles.length > initialCount;
   <style>
     /* Hero 区域 */
     .hero {
-      padding: 70px 0 36px;
+      /* 顶部留足固定导航悬浮层空间（导航占位 14+safe-area+胶囊高，约 40px），
+         灵动岛机型安全区自动补偿，头像与气泡不被遮挡 */
+      padding: calc(88px + env(safe-area-inset-top, 0px)) 0 36px;
       text-align: center;
     }
     .hero-inner {
@@ -388,17 +390,16 @@ const hasMore = articles.length > initialCount;
     }
     .article-card.card-show {
       display: block;
-      animation: cardFadeIn 0.35s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+      /* 只负责淡入（opacity），scale 弹性入场交给 JS 弹簧（避免 CSS/JS transform 打架） */
+      animation: cardFadeIn 0.35s ease forwards;
     }
 
     @keyframes cardFadeIn {
       from {
         opacity: 0;
-        transform: translateY(12px);
       }
       to {
         opacity: 1;
-        transform: translateY(0);
       }
     }
 
@@ -639,14 +640,14 @@ const hasMore = articles.length > initialCount;
       ];
       let meowIdx = 0;
 
-      // ── 自适应帧率物理弹簧系统（高力度，1.2s 收敛，带可见拉伸过冲）──
+      // ── 自适应帧率物理弹簧系统（温和幅度，1.2s 收敛，轻微拉伸过冲）──
       // 推导：欠阻尼弹簧 x(t)=x0·e^(-ζωn·t)·cos(ωd·t)
       //   要求 1.2s 收敛到 1%  →  ζωn = ln(100)/1.2 ≈ 3.835
-      //   取 ζ=0.65（欠阻尼，过冲 ≈ 6.8%，拉伸肉眼可见）
-      //   → ωn = 5.9，k = ωn² = 34.8，c = 2ζωn = 7.67
-      //   点击给初速度冲击 v0 = -4.3 → 平滑压到 0.75 → 反弹拉伸到 1.07 → 1.2s 收敛
+      //   取 ζ=0.7（欠阻尼，过冲 ≈ 4.6%，轻微拉伸感，不夸张）
+      //   → ωn = 5.48，k = ωn² = 30，c = 2ζωn = 7.67
+      //   点击给初速度冲击 v0 = -3.0 → 平滑压到 0.82 → 反弹拉伸到 1.045 → 1.2s 收敛
       const spring = {
-        stiffness: 34.8,
+        stiffness: 30,
         damping: 7.67,
         mass: 1,
         scale: 1,
@@ -682,9 +683,9 @@ const hasMore = articles.length > initialCount;
 
       requestAnimationFrame(tick);
 
-      // 点击：给初速度冲击（平滑压扁→反弹拉伸→收敛），不跳变
+      // 点击：给初速度冲击（平滑压扁→轻微拉伸→收敛），不跳变
       avatarBox.addEventListener('click', () => {
-        spring.vel = -4.3;
+        spring.vel = -3.0;
 
         clearTimeout(typeTimer);
         clearTimeout(hideTimer);
@@ -720,6 +721,29 @@ const hasMore = articles.length > initialCount;
       let isExpanded = false;
       const totalHidden = hiddenCards.length;
 
+      // 展开卡片弹性入场：与全局弹簧同参数（k=30, c=7.67），
+      // 从 scale 0.85 弹回 1（自带轻微过冲拉伸），错峰 60ms 依次弹出
+      const popInSpring = (el: HTMLElement, delayMs: number) => {
+        const spring = { scale: 0.85, vel: 0 };
+        setTimeout(() => {
+          let lastTime = performance.now();
+          const tick = (now: number) => {
+            const dt = Math.min((now - lastTime) / 1000, 1 / 30);
+            lastTime = now;
+            const force = -30 * (spring.scale - 1) - 7.67 * spring.vel;
+            spring.vel += force * dt;
+            spring.scale += spring.vel * dt;
+            el.style.transform = `scale(${spring.scale.toFixed(4)})`;
+            if (Math.abs(spring.scale - 1) < 0.0005 && Math.abs(spring.vel) < 0.0005) {
+              el.style.transform = '';
+              return;
+            }
+            requestAnimationFrame(tick);
+          };
+          requestAnimationFrame(tick);
+        }, delayMs);
+      };
+
       toggleBtn.addEventListener('click', () => {
         isExpanded = !isExpanded;
         toggleBtn.classList.toggle('expanded', isExpanded);
@@ -729,10 +753,11 @@ const hasMore = articles.length > initialCount;
           if (isExpanded) {
             card.classList.remove('card-collapsed');
             card.classList.add('card-show');
-            (card as HTMLElement).style.animationDelay = `${i * 0.05}s`;
+            popInSpring(card as HTMLElement, i * 60);
           } else {
             card.classList.remove('card-show');
             card.classList.add('card-collapsed');
+            (card as HTMLElement).style.transform = '';
           }
         });
 

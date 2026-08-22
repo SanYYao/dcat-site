@@ -322,7 +322,7 @@ const mailtoUrl = `mailto:deadcat@dcat.sanyyao.com?subject=${mailSubject}&body=$
       }
 
       // ── 通用果冻物理弹簧：所有 .pudding-touch 元素（卡片/胶囊/按钮/图标）──
-      // 与头像同参数（k=34.8, c=7.67, 点击 v0=-4.3, 1.2s 收敛），
+      // 与头像同参数（k=30, c=7.67, 点击 v0=-3.0, 1.2s 收敛，温和幅度），
       // pointerdown 触发，rAF 驱动自适应帧率；动画结束清 inline transform 恢复 CSS hover。
       document.querySelectorAll('.pudding-touch').forEach((el) => {
         const spring = { scale: 1, vel: 0 };
@@ -332,7 +332,7 @@ const mailtoUrl = `mailto:deadcat@dcat.sanyyao.com?subject=${mailSubject}&body=$
         const tick = (now: number) => {
           const dt = Math.min((now - lastTime) / 1000, 1 / 30);
           lastTime = now;
-          const force = -34.8 * (spring.scale - 1) - 7.67 * spring.vel;
+          const force = -30 * (spring.scale - 1) - 7.67 * spring.vel;
           spring.vel += force * dt;
           spring.scale += spring.vel * dt;
 
@@ -347,7 +347,7 @@ const mailtoUrl = `mailto:deadcat@dcat.sanyyao.com?subject=${mailSubject}&body=$
         };
 
         el.addEventListener('pointerdown', () => {
-          spring.vel = -4.3;
+          spring.vel = -3.0;
           if (rafId === null) {
             lastTime = performance.now();
             rafId = requestAnimationFrame(tick);
