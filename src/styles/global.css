@@ -13,37 +13,37 @@
 
 :root {
   /* 夜色底色系 */
-  --night-950: #070810;
-  --night-900: #0b0d18;
-  --night-800: #12152a;
-  --night-700: #1b1f3d;
-  --night-600: #272d54;
+  --night-950: #05060b;
+  --night-900: #090b16;
+  --night-800: #101427;
+  --night-700: #181d39;
+  --night-600: #242a50;
 
   /* 猫眼翡翠绿（主色） */
   --cat-500: #2dd4a7;
   --cat-400: #4ae3bd;
   --cat-300: #7df0d3;
-  --cat-glow: rgba(45, 212, 167, 0.35);
-  --cat-glow-soft: rgba(45, 212, 167, 0.15);
+  --cat-glow: rgba(45, 212, 167, 0.4);
+  --cat-glow-soft: rgba(45, 212, 167, 0.16);
 
   /* 粉肉垫（点缀色） */
   --pad-400: #ff8fab;
   --pad-300: #ffa8c0;
-  --pad-glow: rgba(255, 143, 171, 0.25);
-  --pad-glow-soft: rgba(255, 143, 171, 0.12);
+  --pad-glow: rgba(255, 143, 171, 0.3);
+  --pad-glow-soft: rgba(255, 143, 171, 0.14);
 
   /* 中性与线条 */
   --text-hi: #eef1fa;
-  --text-mid: #b9c0da;
-  --text-low: #7e86a8;
+  --text-mid: #b8c0d9;
+  --text-low: #757d9e;
   --line: rgba(238, 241, 250, 0.08);
-  --line-strong: rgba(238, 241, 250, 0.14);
+  --line-strong: rgba(238, 241, 250, 0.15);
 
   /* 玻璃卡片（暗色玻璃体系） */
-  --glass-bg: rgba(18, 21, 42, 0.55);
-  --glass-blur: blur(18px);
+  --glass-bg: rgba(16, 20, 39, 0.65);
+  --glass-blur: blur(20px);
   --glass-border: rgba(238, 241, 250, 0.09);
-  --glass-shadow: 0 20px 60px -20px rgba(0, 0, 0, 0.7);
+  --glass-shadow: 0 20px 60px -20px rgba(0, 0, 0, 0.75);
 
   /* 字体族 */
   --font-serif: "Noto Serif SC", "Source Han Serif SC", "Songti SC", serif;
@@ -74,6 +74,7 @@ body {
   line-height: 1.8;
   -webkit-font-smoothing: antialiased;
   overflow-x: hidden;
+  position: relative;
 }
 
 /* Webkit: 隐藏原生滚动条但保留滚动 */
@@ -81,17 +82,20 @@ body {
 ::-webkit-scrollbar-track { display: none; }
 ::-webkit-scrollbar-thumb { display: none; }
 
-/* 夜空背景：深色渐变 + 星点 + 动态极光呼吸光晕 */
+/* ─────────────────────────────────────────────
+   夜空背景：动态极光星云 + 多层微弱星空 + 划过流星
+   ───────────────────────────────────────────── */
 .aurora-bg {
   position: fixed;
   inset: 0;
-  z-index: -2;
+  z-index: -3;
   background:
-    radial-gradient(ellipse 80% 55% at 15% -10%, rgba(45, 212, 167, 0.16), transparent 60%),
-    radial-gradient(ellipse 70% 50% at 90% 110%, rgba(255, 143, 171, 0.12), transparent 60%),
-    radial-gradient(ellipse 60% 60% at 75% 15%, rgba(39, 45, 84, 0.55), transparent 65%),
-    linear-gradient(180deg, var(--night-950) 0%, var(--night-900) 55%, var(--night-800) 100%);
-  animation: aurora-breath 12s ease-in-out infinite alternate;
+    radial-gradient(ellipse 90% 60% at 15% -10%, rgba(45, 212, 167, 0.18), transparent 60%),
+    radial-gradient(ellipse 80% 50% at 90% 110%, rgba(255, 143, 171, 0.14), transparent 60%),
+    radial-gradient(ellipse 65% 65% at 75% 20%, rgba(36, 42, 80, 0.65), transparent 65%),
+    radial-gradient(circle 400px at 50% 50%, rgba(45, 212, 167, 0.05), transparent 70%),
+    linear-gradient(180deg, var(--night-950) 0%, var(--night-900) 50%, var(--night-800) 100%);
+  animation: aurora-breath 14s ease-in-out infinite alternate;
 }
 
 @keyframes aurora-breath {
@@ -100,36 +104,92 @@ body {
     transform: scale(1);
   }
   50% {
-    filter: hue-rotate(8deg) brightness(1.06);
-    transform: scale(1.02);
+    filter: hue-rotate(10deg) brightness(1.08);
+    transform: scale(1.03);
   }
   100% {
-    filter: hue-rotate(-6deg) brightness(0.96);
+    filter: hue-rotate(-8deg) brightness(0.95);
     transform: scale(1);
   }
 }
 
+/* 多层繁星系统 */
 .stars {
   position: fixed;
   inset: 0;
-  z-index: -1;
+  z-index: -2;
   pointer-events: none;
   background-image:
-    radial-gradient(1.5px 1.5px at 20px 30px, rgba(238, 241, 250, 0.75), transparent),
-    radial-gradient(1px 1px at 90px 120px, rgba(238, 241, 250, 0.5), transparent),
-    radial-gradient(1.5px 1.5px at 160px 60px, rgba(238, 241, 250, 0.4), transparent),
-    radial-gradient(1px 1px at 260px 180px, rgba(238, 241, 250, 0.6), transparent),
-    radial-gradient(2px 2px at 330px 90px, rgba(125, 240, 211, 0.65), transparent),
-    radial-gradient(1px 1px at 420px 200px, rgba(255, 168, 192, 0.45), transparent),
-    radial-gradient(1.5px 1.5px at 500px 40px, rgba(238, 241, 250, 0.5), transparent);
-  background-size: 550px 260px;
-  animation: twinkle 5s ease-in-out infinite alternate;
+    /* 细碎远星 (白色) */
+    radial-gradient(1px 1px at 30px 40px, rgba(238, 241, 250, 0.8), transparent),
+    radial-gradient(1px 1px at 110px 150px, rgba(238, 241, 250, 0.5), transparent),
+    radial-gradient(1.5px 1.5px at 190px 70px, rgba(238, 241, 250, 0.65), transparent),
+    radial-gradient(1px 1px at 280px 210px, rgba(238, 241, 250, 0.55), transparent),
+    radial-gradient(1px 1px at 450px 110px, rgba(238, 241, 250, 0.45), transparent),
+    radial-gradient(1.5px 1.5px at 530px 230px, rgba(238, 241, 250, 0.7), transparent),
+    radial-gradient(1px 1px at 670px 80px, rgba(238, 241, 250, 0.5), transparent),
+    radial-gradient(1px 1px at 780px 190px, rgba(238, 241, 250, 0.6), transparent),
+    /* 翡翠绿亮点 */
+    radial-gradient(2px 2px at 90px 260px, rgba(74, 227, 189, 0.85), transparent),
+    radial-gradient(2.5px 2.5px at 340px 90px, rgba(125, 240, 211, 0.9), transparent),
+    radial-gradient(2px 2px at 610px 170px, rgba(74, 227, 189, 0.75), transparent),
+    /* 粉肉垫亮点 */
+    radial-gradient(2px 2px at 230px 140px, rgba(255, 143, 171, 0.8), transparent),
+    radial-gradient(2.5px 2.5px at 490px 50px, rgba(255, 168, 192, 0.85), transparent),
+    radial-gradient(2px 2px at 720px 280px, rgba(255, 143, 171, 0.75), transparent);
+  background-size: 800px 320px;
+  animation: twinkle 6s ease-in-out infinite alternate;
+}
+
+/* 第二层交错星光（增加深邃视差感） */
+.stars-layer2 {
+  position: fixed;
+  inset: 0;
+  z-index: -2;
+  pointer-events: none;
+  background-image:
+    radial-gradient(1px 1px at 60px 100px, rgba(238, 241, 250, 0.5), transparent),
+    radial-gradient(1.5px 1.5px at 150px 220px, rgba(125, 240, 211, 0.6), transparent),
+    radial-gradient(1px 1px at 380px 160px, rgba(238, 241, 250, 0.45), transparent),
+    radial-gradient(2px 2px at 420px 290px, rgba(255, 168, 192, 0.55), transparent),
+    radial-gradient(1px 1px at 580px 40px, rgba(238, 241, 250, 0.6), transparent),
+    radial-gradient(1.5px 1.5px at 750px 130px, rgba(74, 227, 189, 0.5), transparent);
+  background-size: 650px 350px;
+  animation: twinkle-alt 8s ease-in-out infinite alternate;
 }
 
 @keyframes twinkle {
   0% { opacity: 0.45; transform: translateY(0); }
-  50% { opacity: 0.9; }
-  100% { opacity: 0.6; transform: translateY(-3px); }
+  50% { opacity: 0.95; }
+  100% { opacity: 0.65; transform: translateY(-4px); }
+}
+
+@keyframes twinkle-alt {
+  0% { opacity: 0.65; transform: translateY(0) scale(1); }
+  50% { opacity: 0.35; }
+  100% { opacity: 0.85; transform: translateY(-2px) scale(1.02); }
+}
+
+/* 划过的微弱流星 */
+.shooting-star {
+  position: fixed;
+  top: 15%;
+  left: 80%;
+  width: 120px;
+  height: 1.5px;
+  background: linear-gradient(90deg, rgba(125, 240, 211, 0.8), rgba(255, 143, 171, 0.4), transparent);
+  transform: rotate(-35deg);
+  opacity: 0;
+  pointer-events: none;
+  z-index: -1;
+  animation: shoot 16s ease-in-out infinite;
+}
+
+@keyframes shoot {
+  0%, 75% { opacity: 0; transform: translate(0, 0) rotate(-35deg); }
+  78% { opacity: 0.85; transform: translate(-140px, 100px) rotate(-35deg); }
+  82% { opacity: 0; transform: translate(-280px, 200px) rotate(-35deg); }
+  100% { opacity: 0; }
 }
 
 /* 顶部猫爪阅读进度条 */
@@ -151,17 +211,17 @@ body {
   transition: width 0.08s ease-out;
 }
 
-/* 玻璃卡片（第一版：暗色玻璃 + 细描边 + 流光过度态） */
+/* 玻璃卡片体系 */
 .glass {
   position: relative;
-  background: linear-gradient(135deg, rgba(18, 21, 42, 0.65), rgba(18, 21, 42, 0.45));
+  background: linear-gradient(135deg, rgba(18, 22, 44, 0.68), rgba(13, 16, 34, 0.48));
   backdrop-filter: var(--glass-blur);
   -webkit-backdrop-filter: var(--glass-blur);
   border: 1px solid var(--glass-border);
   border-radius: var(--r-lg);
   box-shadow:
     var(--glass-shadow),
-    inset 0 0 26px rgba(255, 255, 255, 0.025),
+    inset 0 0 26px rgba(255, 255, 255, 0.02),
     inset 0 1px 0 rgba(255, 255, 255, 0.08);
   transition: transform 0.28s cubic-bezier(0.2, 0.8, 0.2, 1),
               border-color 0.28s ease,
@@ -171,14 +231,6 @@ body {
 /* 渐变文字 */
 .grad-text {
   background: linear-gradient(100deg, var(--cat-300) 0%, var(--cat-400) 40%, var(--pad-300) 100%);
-  -webkit-background-clip: text;
-  background-clip: text;
-  color: transparent;
-}
-
-/* 翡翠绿单色高亮渐变 */
-.grad-cat {
-  background: linear-gradient(100deg, var(--cat-400) 0%, var(--cat-300) 100%);
   -webkit-background-clip: text;
   background-clip: text;
   color: transparent;
@@ -210,7 +262,6 @@ body {
   transition: all 0.25s ease;
   cursor: pointer;
 }
-/* 顶部高光条 */
 .btn::before {
   content: "";
   position: absolute;
