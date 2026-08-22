@@ -1,5 +1,5 @@
 /* ─────────────────────────────────────────────
-   死猫的小网站 · 全面精修 Markdown 样式与设计 Token
+   死猫的小网站 · Apple Liquid Glass 真实折射与设计 Token
    深夜夜猫系：墨蓝夜色 × 翡翠猫眼 × 粉肉垫
    ───────────────────────────────────────────── */
 
@@ -44,17 +44,6 @@
   --text-low: #757d9e;
   --line: rgba(238, 241, 250, 0.08);
   --line-strong: rgba(238, 241, 250, 0.15);
-
-  /* Apple Liquid Glass 材质设计体系：超通透 + 镜面边缘折射 */
-  --lg-bg: rgba(20, 26, 52, 0.32);
-  --lg-blur: blur(28px) saturate(190%) brightness(1.08);
-  --lg-border: rgba(255, 255, 255, 0.15);
-  --lg-highlight: inset 0 1.5px 0.5px rgba(255, 255, 255, 0.35),
-                  inset 0 -1.5px 0.5px rgba(0, 0, 0, 0.4),
-                  inset 1px 0 1px rgba(255, 255, 255, 0.12),
-                  inset -1px 0 1px rgba(0, 0, 0, 0.25);
-  --lg-shadow: 0 16px 36px -10px rgba(0, 0, 0, 0.65),
-               0 0 20px -4px var(--cat-glow-soft);
 
   /* 字体族 */
   --font-serif: "Noto Serif SC", "Source Han Serif SC", "Songti SC", serif;
@@ -129,20 +118,61 @@ body {
   transition: width 0.08s ease-out;
 }
 
-/* 磨砂玻璃卡片（Apple Liquid Glass 通透层级） */
-.glass {
+/* ─────────────────────────────────────────────
+   真实 Apple Liquid Glass 材质体系（三层架构）
+   ───────────────────────────────────────────── */
+
+.glass,
+.liquid-glass-card {
   position: relative;
-  background: var(--lg-bg);
-  backdrop-filter: var(--lg-blur);
-  -webkit-backdrop-filter: var(--lg-blur);
-  border: 1px solid var(--lg-border);
+  isolation: isolate;
+  background: transparent;
   border-radius: var(--r-lg);
+  box-shadow: 0 20px 50px -15px rgba(0, 0, 0, 0.75);
+  transition: transform 0.3s cubic-bezier(0.2, 0.8, 0.2, 1),
+              border-color 0.3s ease,
+              box-shadow 0.3s ease;
+}
+
+/* 第 1 层：SVG 物理折射层 (feDisplacementMap 光学扭曲背景) */
+.glass::before,
+.liquid-glass-card::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  z-index: -3;
+  backdrop-filter: url(#liquid-glass-refraction);
+  -webkit-backdrop-filter: url(#liquid-glass-refraction);
+  pointer-events: none;
+}
+
+/* 第 2 层：极通透晶体与高饱和度滤镜 (Ultra-clear Tint) */
+.glass::after,
+.liquid-glass-card::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  z-index: -2;
+  background: rgba(18, 24, 48, 0.25);
+  backdrop-filter: blur(8px) saturate(190%) brightness(1.08);
+  -webkit-backdrop-filter: blur(8px) saturate(190%) brightness(1.08);
+  pointer-events: none;
+}
+
+/* 第 3 层：Specular 镜面双向高光反射外壳 (Specular Shell) */
+.glass-specular-shell {
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  z-index: -1;
+  pointer-events: none;
   box-shadow:
-    var(--lg-shadow),
-    var(--lg-highlight);
-  transition: transform 0.28s cubic-bezier(0.2, 0.8, 0.2, 1),
-              border-color 0.28s ease,
-              box-shadow 0.28s ease;
+    inset 1.5px 1.5px 1px 0 rgba(255, 255, 255, 0.65),
+    inset -1px -1px 1px 0 rgba(255, 255, 255, 0.25),
+    inset 0 0 20px 2px rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.12);
 }
 
 .grad-text {

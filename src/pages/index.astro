@@ -62,6 +62,8 @@ const hasMore = articles.length > initialCount;
                 href={`/articles/${post.id}/`}
                 data-article-item={isHidden ? 'hidden' : 'visible'}
               >
+                <!-- Specular 镜面高光外壳 -->
+                <div class="glass-specular-shell"></div>
                 <!-- 顶部彩色流光条 -->
                 <div class="card-glow-bar"></div>
                 
@@ -121,6 +123,7 @@ const hasMore = articles.length > initialCount;
   <section class="diary-cta">
     <div class="wrap">
       <a href="/diary/" class="diary-cta-card glass">
+        <div class="glass-specular-shell"></div>
         <div class="diary-cta-icon-box">
           <span class="diary-cta-icon">📖</span>
         </div>
@@ -136,7 +139,7 @@ const hasMore = articles.length > initialCount;
   <style>
     /* Hero 区域 */
     .hero {
-      padding: 80px 0 36px;
+      padding: 70px 0 36px;
       text-align: center;
     }
     .hero-inner {
@@ -391,9 +394,6 @@ const hasMore = articles.length > initialCount;
       text-decoration: none;
       color: var(--text-hi);
       position: relative;
-      overflow: hidden;
-      border-radius: var(--r-md);
-      transition: all 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
     }
 
     .article-card.card-collapsed {
@@ -429,12 +429,15 @@ const hasMore = articles.length > initialCount;
     }
 
     .article-card:hover {
+      transform: translateY(-4px);
+    }
+    .article-card:hover .glass-specular-shell {
       border-color: rgba(45, 212, 167, 0.45);
       box-shadow:
+        inset 1.5px 1.5px 1px 0 rgba(255, 255, 255, 0.85),
+        inset -1px -1px 1px 0 rgba(45, 212, 167, 0.4),
         0 24px 64px -16px rgba(0, 0, 0, 0.85),
-        0 0 36px -8px var(--cat-glow),
-        inset 0 0 20px rgba(45, 212, 167, 0.04);
-      transform: translateY(-4px);
+        0 0 36px -8px var(--cat-glow);
     }
     .article-card:hover .card-glow-bar {
       opacity: 0.9;
@@ -565,12 +568,17 @@ const hasMore = articles.length > initialCount;
       color: var(--text-hi);
       border-radius: var(--r-md);
       position: relative;
-      overflow: hidden;
     }
     .diary-cta-card:hover {
-      border-color: rgba(255, 143, 171, 0.45);
-      box-shadow: 0 20px 60px -18px rgba(0, 0, 0, 0.8), 0 0 36px -12px var(--pad-glow);
       transform: translateY(-3px);
+    }
+    .diary-cta-card:hover .glass-specular-shell {
+      border-color: rgba(255, 143, 171, 0.45);
+      box-shadow:
+        inset 1.5px 1.5px 1px 0 rgba(255, 255, 255, 0.85),
+        inset -1px -1px 1px 0 rgba(255, 143, 171, 0.4),
+        0 20px 60px -18px rgba(0, 0, 0, 0.8),
+        0 0 36px -12px var(--pad-glow);
     }
     .diary-cta-icon-box {
       width: 48px;
@@ -612,7 +620,6 @@ const hasMore = articles.length > initialCount;
   </style>
 
   <script>
-    // 一言 hitokoto：3 秒超时兜底
     (async () => {
       const el = document.getElementById('quote-text');
       const from = document.getElementById('quote-from');
@@ -631,7 +638,6 @@ const hasMore = articles.length > initialCount;
       }
     })();
 
-    // 戳头像彩蛋：极高阻尼紧致弹性 + 右上角打字机气泡
     const avatarBox = document.getElementById('catAvatarBox');
     const bubble = document.getElementById('catBubble');
     const bubbleText = document.getElementById('bubbleText');
@@ -650,12 +656,10 @@ const hasMore = articles.length > initialCount;
       let meowIdx = 0;
 
       avatarBox.addEventListener('click', () => {
-        // 触发极高阻尼弹性动画
         avatarBox.classList.remove('is-bouncing');
-        void avatarBox.offsetWidth; // 触发 reflow
+        void avatarBox.offsetWidth;
         avatarBox.classList.add('is-bouncing');
 
-        // 打字机弹出气泡
         clearTimeout(typeTimer);
         clearTimeout(hideTimer);
 
@@ -672,7 +676,6 @@ const hasMore = articles.length > initialCount;
             charIdx++;
             typeTimer = setTimeout(typeChar, 35);
           } else {
-            // 打字完毕，停留 3.5 秒后优雅淡出
             hideTimer = setTimeout(() => {
               bubble.classList.remove('show');
             }, 3500);
@@ -683,7 +686,6 @@ const hasMore = articles.length > initialCount;
       });
     }
 
-    // 文章折叠与展开逻辑
     const toggleBtn = document.getElementById('toggleArticlesBtn');
     const toggleBtnText = document.getElementById('toggleBtnText');
     const hiddenCards = document.querySelectorAll('[data-article-item="hidden"]');
