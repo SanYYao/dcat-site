@@ -141,7 +141,7 @@ const hasMore = articles.length > initialCount;
     .hero {
       /* 顶部留足固定导航悬浮层空间（导航占位 14+safe-area+胶囊高，约 40px），
          灵动岛机型安全区自动补偿，头像与气泡不被遮挡 */
-      padding: calc(88px + env(safe-area-inset-top, 0px)) 0 36px;
+      padding: calc(106px + env(safe-area-inset-top, 0px)) 0 36px;
       text-align: center;
     }
     .hero-inner {
@@ -640,14 +640,14 @@ const hasMore = articles.length > initialCount;
       ];
       let meowIdx = 0;
 
-      // ── 自适应帧率物理弹簧系统（温和幅度，1.2s 收敛，轻微拉伸过冲）──
+      // ── 自适应帧率物理弹簧系统（柔和幅度，1.2s 收敛，轻微拉伸过冲）──
       // 推导：欠阻尼弹簧 x(t)=x0·e^(-ζωn·t)·cos(ωd·t)
       //   要求 1.2s 收敛到 1%  →  ζωn = ln(100)/1.2 ≈ 3.835
-      //   取 ζ=0.7（欠阻尼，过冲 ≈ 4.6%，轻微拉伸感，不夸张）
-      //   → ωn = 5.48，k = ωn² = 30，c = 2ζωn = 7.67
-      //   点击给初速度冲击 v0 = -3.0 → 平滑压到 0.82 → 反弹拉伸到 1.045 → 1.2s 收敛
+      //   取 ζ=0.75（阻尼更足，过冲 ≈ 2.7%，极轻微拉伸感）
+      //   → ωn = 5.11，k = ωn² = 26.1，c = 2ζωn = 7.67
+      //   点击给初速度冲击 v0 = -2.2 → 平滑压到 0.86 → 反弹拉伸到 1.027 → 1.2s 收敛
       const spring = {
-        stiffness: 30,
+        stiffness: 26.1,
         damping: 7.67,
         mass: 1,
         scale: 1,
@@ -685,7 +685,7 @@ const hasMore = articles.length > initialCount;
 
       // 点击：给初速度冲击（平滑压扁→轻微拉伸→收敛），不跳变
       avatarBox.addEventListener('click', () => {
-        spring.vel = -3.0;
+        spring.vel = -2.2;
 
         clearTimeout(typeTimer);
         clearTimeout(hideTimer);
@@ -721,16 +721,16 @@ const hasMore = articles.length > initialCount;
       let isExpanded = false;
       const totalHidden = hiddenCards.length;
 
-      // 展开卡片弹性入场：与全局弹簧同参数（k=30, c=7.67），
-      // 从 scale 0.85 弹回 1（自带轻微过冲拉伸），错峰 60ms 依次弹出
+      // 展开卡片弹性入场：与全局弹簧同参数（k=26.1, c=7.67），
+      // 从 scale 0.9 弹回 1（轻微过冲拉伸），错峰 60ms 依次弹出
       const popInSpring = (el: HTMLElement, delayMs: number) => {
-        const spring = { scale: 0.85, vel: 0 };
+        const spring = { scale: 0.9, vel: 0 };
         setTimeout(() => {
           let lastTime = performance.now();
           const tick = (now: number) => {
             const dt = Math.min((now - lastTime) / 1000, 1 / 30);
             lastTime = now;
-            const force = -30 * (spring.scale - 1) - 7.67 * spring.vel;
+            const force = -26.1 * (spring.scale - 1) - 7.67 * spring.vel;
             spring.vel += force * dt;
             spring.scale += spring.vel * dt;
             el.style.transform = `scale(${spring.scale.toFixed(4)})`;
