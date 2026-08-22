@@ -14,8 +14,8 @@ const hasMore = articles.length > initialCount;
 <BaseLayout title="首页" description="死猫的小网站 —— 一只猫娘的互联网小窝">
   <section class="hero">
     <div class="wrap hero-inner">
-      <!-- 猫娘头像：极软布丁果冻触感点击动效 + 右上角打字机气泡 -->
-      <div class="cat-fig pudding-touch" id="catAvatarBox" title="戳一戳死猫 (=^･ω･^=)">
+      <!-- 猫娘头像：rAF 物理弹簧自适应帧率弹性 + 打字机气泡 -->
+      <div class="cat-fig" id="catAvatarBox" title="戳一戳死猫 (=^･ω･^=)">
         <div class="avatar-halo"></div>
         <img src="/assets/deadcat-avatar-q4.png" alt="死猫头像" width="200" height="200" class="cat-avatar" id="catAvatarImg" />
         <span class="cat-status-badge"><span></span> online</span>
@@ -152,7 +152,7 @@ const hasMore = articles.length > initialCount;
       margin-bottom: 24px;
       cursor: pointer;
       user-select: none;
-      animation: floaty 6s ease-in-out infinite;
+      /* transform 完全交给 JS 物理弹簧驱动（自适应帧率），不用 CSS 动画 */
     }
     .avatar-halo {
       position: absolute;
@@ -181,6 +181,9 @@ const hasMore = articles.length > initialCount;
         0 0 35px -8px var(--cat-glow),
         0 14px 36px rgba(0, 0, 0, 0.55);
       transition: border-color 0.3s;
+      will-change: transform; /* 提升合成层，JS 弹簧变换不触发重排 */
+      backface-visibility: hidden;
+      -webkit-backface-visibility: hidden;
     }
     .cat-fig:hover .cat-avatar {
       border-color: var(--cat-300);
@@ -253,11 +256,6 @@ const hasMore = articles.length > initialCount;
     @keyframes cursor-blink {
       0%, 100% { opacity: 1; }
       50% { opacity: 0; }
-    }
-
-    @keyframes floaty {
-      0%, 100% { transform: translateY(0); }
-      50% { transform: translateY(-8px); }
     }
 
     .hero-title {
@@ -624,12 +622,13 @@ const hasMore = articles.length > initialCount;
     })();
 
     const avatarBox = document.getElementById('catAvatarBox');
+    const avatarImg = document.getElementById('catAvatarImg');
     const bubble = document.getElementById('catBubble');
     const bubbleText = document.getElementById('bubbleText');
     let typeTimer: any = null;
     let hideTimer: any = null;
 
-    if (avatarBox && bubble && bubbleText) {
+    if (avatarBox && avatarImg && bubble && bubbleText) {
       const meows = [
         '喵！干嘛戳本喵！(=^･ω･^=)',
         '呼噜呼噜……再摸摸嘛~',
@@ -640,11 +639,55 @@ const hasMore = articles.length > initialCount;
       ];
       let meowIdx = 0;
 
+      // ── 自适应帧率物理弹簧系统 ──
+      // 每帧用真实时间差积分，60Hz / 120Hz ProMotion 都丝滑一致；
+      // 相比 CSS keyframes（固定关键帧），不掉帧、不卡顿。
+      const spring = {
+        // 弹簧参数：stiffness 力度 / damping 阻尼 / mass 质量
+        stiffness: 380,   // 高刚度：回弹快、紧致
+        damping: 28,      // 较高阻尼：几乎不过冲，柔和收尾
+        mass: 1,
+        // 状态
+        scale: 1,
+        vel: 0,
+        floatY: 0,
+        running: false,
+      };
+
+      let lastTime = performance.now();
+
+      function tick(now: number) {
+        // 真实帧间隔，钳制上限防止后台标签页/卡顿时 dt 爆炸
+        const dt = Math.min((now - lastTime) / 1000, 1 / 30);
+        lastTime = now;
+        const t = now / 1000;
+
+        // 持续柔和浮动（正弦，JS 驱动，同样自适应帧率）
+        spring.floatY = Math.sin(t * 1.15) * 8;
+
+        // 弹簧物理：回到 scale = 1
+        const force = -spring.stiffness * (spring.scale - 1) - spring.damping * spring.vel;
+        spring.vel += (force / spring.mass) * dt;
+        spring.scale += spring.vel * dt;
+
+        // 收敛判定
+        if (Math.abs(spring.scale - 1) < 0.0004 && Math.abs(spring.vel) < 0.0004) {
+          spring.scale = 1;
+          spring.vel = 0;
+        }
+
+        avatarImg.style.transform = `translateY(${spring.floatY.toFixed(2)}px) scale(${spring.scale.toFixed(4)})`;
+        spring.running = true;
+        requestAnimationFrame(tick);
+      }
+
+      requestAnimationFrame(tick);
+
+      // 点击：给弹簧一个冲击力（先压扁再弹回，自带 Squash & Stretch 拉伸感）
       avatarBox.addEventListener('click', () => {
-        // 软布丁果冻触感动画触发
-        avatarBox.classList.remove('jelly-active');
-        void avatarBox.offsetWidth;
-        avatarBox.classList.add('jelly-active');
+        // 负速度 = 压缩方向（scale 减小），弹簧回弹时会自然过冲产生拉伸
+        spring.vel = -4.2;
+        spring.scale = Math.min(spring.scale, 1);
 
         clearTimeout(typeTimer);
         clearTimeout(hideTimer);
