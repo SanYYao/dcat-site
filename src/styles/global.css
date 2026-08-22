@@ -160,7 +160,7 @@ body {
   pointer-events: none;
 }
 
-/* 第 3 层：超精细 1px / 0.75px 丝滑微光 Specular 外壳（去除了粗硬感） */
+/* 第 3 层：超精细 1px 丝滑微光 Specular 外壳 */
 .glass-specular-shell {
   position: absolute;
   inset: 0;
@@ -176,20 +176,22 @@ body {
 }
 
 /* ─────────────────────────────────────────────
-   全局超软布丁果冻触感动画（低阻尼、低动能、微小柔和Duang~）
+   超弹果冻布丁：明显 Squash & Stretch（挤压与拉伸感）动效
+   低阻尼多波段软糯回弹（横向压扁 -> 纵向拉伸 -> 柔和余震归位）
    ───────────────────────────────────────────── */
 @keyframes softPuddingJelly {
   0% { transform: scale(1, 1); }
-  25% { transform: scale(1.028, 0.972); }
-  50% { transform: scale(0.985, 1.015); }
-  75% { transform: scale(1.008, 0.992); }
-  90% { transform: scale(0.996, 1.004); }
+  22% { transform: scale(1.15, 0.82); }   /* 明显横向挤压、纵向扁平 */
+  42% { transform: scale(0.88, 1.14); }   /* 明显纵向拉伸、横向收窄（核心拉伸感） */
+  62% { transform: scale(1.06, 0.94); }   /* 第二波低阻尼回弹 */
+  80% { transform: scale(0.97, 1.03); }   /* 软糯微拉伸余震 */
+  92% { transform: scale(1.015, 0.985); } /* 极柔微颤 */
   100% { transform: scale(1, 1); }
 }
 
 .jelly-active,
 .pudding-touch:active {
-  animation: softPuddingJelly 0.6s cubic-bezier(0.28, 0.84, 0.42, 1) forwards;
+  animation: softPuddingJelly 0.75s cubic-bezier(0.25, 1.35, 0.45, 1) forwards;
 }
 
 .grad-text {
@@ -242,7 +244,7 @@ body {
   color: #fff;
 }
 .btn:active {
-  animation: softPuddingJelly 0.5s cubic-bezier(0.28, 0.84, 0.42, 1) forwards;
+  animation: softPuddingJelly 0.75s cubic-bezier(0.25, 1.35, 0.45, 1) forwards;
 }
 
 a { color: var(--cat-400); text-decoration: none; transition: color 0.2s, text-shadow 0.2s; }
