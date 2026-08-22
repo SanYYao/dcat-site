@@ -33,7 +33,7 @@ const { title, description, publishedAt, tags = [] } = post.data;
         </div>
       </header>
 
-      <div class="article-body glass">
+      <div class="article-body glass markdown-content">
         <Content />
       </div>
 
@@ -80,118 +80,12 @@ const { title, description, publishedAt, tags = [] } = post.data;
 
     .article-body {
       padding: 42px 46px;
-      font-family: var(--font-serif);
-      font-size: 1.05rem;
-      line-height: 2.1;
-      color: var(--text-hi);
     }
 
     @media (max-width: 640px) {
       .article-body {
         padding: 28px 22px;
-        font-size: 1rem;
-        line-height: 1.95;
       }
-    }
-
-    /* Markdown 排版细节 */
-    .article-body :global(h1) {
-      font-family: var(--font-cute);
-      font-size: 1.75rem;
-      margin: 1.8em 0 0.7em;
-      padding-bottom: 0.4em;
-      border-bottom: 1px solid var(--line);
-      color: var(--cat-300);
-    }
-    .article-body :global(h2) {
-      font-family: var(--font-cute);
-      font-size: 1.45rem;
-      margin: 1.6em 0 0.6em;
-      color: var(--text-hi);
-      position: relative;
-    }
-    .article-body :global(h3) {
-      font-family: var(--font-cute);
-      font-size: 1.25rem;
-      margin: 1.4em 0 0.5em;
-      color: var(--pad-300);
-    }
-    .article-body :global(p) { margin: 1.1em 0; }
-    .article-body :global(strong) {
-      color: var(--cat-300);
-      font-weight: 700;
-    }
-    .article-body :global(em) {
-      color: var(--pad-300);
-      font-style: italic;
-    }
-    .article-body :global(ul), .article-body :global(ol) {
-      margin: 1em 0;
-      padding-left: 1.8em;
-    }
-    .article-body :global(li) { margin: 0.5em 0; }
-    .article-body :global(li::marker) {
-      color: var(--cat-400);
-    }
-    .article-body :global(hr) {
-      border: none;
-      border-top: 1px dashed rgba(45, 212, 167, 0.25);
-      margin: 2.6em 0;
-      position: relative;
-    }
-    .article-body :global(hr::after) {
-      content: "🐾";
-      position: absolute;
-      top: -12px;
-      left: 50%;
-      transform: translateX(-50%);
-      background: var(--night-800);
-      padding: 0 8px;
-      font-size: 0.9rem;
-      color: var(--cat-400);
-    }
-    .article-body :global(a) {
-      color: var(--cat-400);
-      text-decoration: underline;
-      text-underline-offset: 3px;
-      transition: all 0.2s;
-    }
-    .article-body :global(a:hover) {
-      color: var(--cat-300);
-      text-shadow: 0 0 12px var(--cat-glow);
-    }
-    .article-body :global(blockquote) {
-      border-left: 3.5px solid var(--cat-400);
-      background: linear-gradient(90deg, rgba(45, 212, 167, 0.08), rgba(255, 143, 171, 0.03));
-      padding: 12px 20px;
-      margin: 1.4em 0;
-      border-radius: 0 var(--r-sm) var(--r-sm) 0;
-      color: var(--text-mid);
-      font-style: normal;
-    }
-    .article-body :global(code) {
-      font-family: "JetBrains Mono", ui-monospace, "Cascadia Code", monospace;
-      font-size: 0.88em;
-      background: rgba(238, 241, 250, 0.08);
-      color: var(--cat-300);
-      padding: 2px 7px;
-      border-radius: 6px;
-      border: 1px solid rgba(238, 241, 250, 0.06);
-    }
-    .article-body :global(pre) {
-      background: var(--night-950);
-      border: 1px solid var(--line-strong);
-      border-radius: var(--r-sm);
-      padding: 18px 22px;
-      overflow-x: auto;
-      margin: 1.4em 0;
-      box-shadow: inset 0 2px 8px rgba(0, 0, 0, 0.5);
-    }
-    .article-body :global(pre code) {
-      background: none;
-      padding: 0;
-      border: none;
-      color: var(--text-hi);
     }
 
     .article-foot {

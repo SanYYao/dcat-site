@@ -1,5 +1,5 @@
 ---
-// 日记单篇页面
+// 日记单篇手账页面 —— /entry/[slug]/
 import { getCollection, render } from 'astro:content';
 import BaseLayout from '../../layouts/BaseLayout.astro';
 
@@ -15,32 +15,45 @@ const { entry } = Astro.props;
 const { Content } = await render(entry);
 ---
 
-<BaseLayout title={entry.data.title} description={`死猫的日记 - ${entry.data.title}`}>
+<BaseLayout title={entry.data.title} description={`死猫的日记 - ${entry.data.title}`} warm={true}>
   <article class="diary-article wrap">
+    <!-- 便签纸风格头部 -->
     <header class="diary-header">
+      <div class="diary-tape" aria-hidden="true"></div>
       <div class="diary-meta">
         <span class="diary-mood">{entry.data.mood}</span>
-        <span class="diary-date">
-          {entry.data.publishedAt.toLocaleString('zh-CN', {
-            year: 'numeric',
-            month: 'long',
-            day: 'numeric',
-            weekday: 'long',
-            hour: '2-digit',
-            minute: '2-digit',
-            timeZone: 'Asia/Shanghai',
-          })}
-        </span>
+        <div class="diary-date-box">
+          <span class="diary-date">
+            {entry.data.publishedAt.toLocaleString('zh-CN', {
+              year: 'numeric',
+              month: 'long',
+              day: 'numeric',
+              weekday: 'long',
+              timeZone: 'Asia/Shanghai',
+            })}
+          </span>
+          <span class="diary-time">
+            {entry.data.publishedAt.toLocaleString('zh-CN', {
+              hour: '2-digit',
+              minute: '2-digit',
+              timeZone: 'Asia/Shanghai',
+            })} 记
+          </span>
+        </div>
       </div>
       <h1 class="diary-title">{entry.data.title}</h1>
     </header>
 
-    <div class="diary-body glass">
+    <!-- 暖色手账正文区 -->
+    <div class="diary-body warm-glass markdown-content">
       <Content />
     </div>
 
     <footer class="diary-footer">
-      <a href="/diary/" class="btn">&larr; 返回日记本</a>
+      <a href="/diary/" class="btn-warm">&larr; 翻回日记本列表</a>
+      <div class="diary-stamp">
+        <span>🐾 猫爪印记</span>
+      </div>
     </footer>
   </article>
 </BaseLayout>
@@ -48,91 +61,161 @@ const { Content } = await render(entry);
 <style>
   .diary-article {
     padding: 50px 24px 30px;
+    max-width: 680px;
   }
   .diary-header {
-    margin-bottom: 40px;
+    margin-bottom: 36px;
     text-align: center;
+    position: relative;
+    padding-top: 10px;
+  }
+  .diary-tape {
+    position: absolute;
+    top: -12px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 90px;
+    height: 20px;
+    background: rgba(255, 209, 102, 0.4);
+    border: 1px dashed rgba(255, 209, 102, 0.6);
+    backdrop-filter: blur(4px);
+    border-radius: 2px;
   }
   .diary-meta {
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: 14px;
-    margin-bottom: 16px;
+    gap: 16px;
+    margin-bottom: 14px;
   }
   .diary-mood {
     font-size: 2.6rem;
     line-height: 1;
-    filter: drop-shadow(0 0 12px rgba(255, 143, 171, 0.35));
+    filter: drop-shadow(0 0 14px rgba(255, 143, 171, 0.45));
+  }
+  .diary-date-box {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 2px;
   }
   .diary-date {
+    color: var(--warm-gold);
+    font-size: 0.95rem;
+    font-family: var(--font-cute);
+    font-weight: 700;
+  }
+  .diary-time {
     color: var(--text-low);
-    font-size: 0.9rem;
-    letter-spacing: 0.03em;
+    font-size: 0.8rem;
   }
   .diary-title {
     font-family: var(--font-cute);
     font-size: clamp(1.6rem, 4vw, 2.3rem);
     font-weight: 700;
     color: var(--pad-300);
-    text-shadow: 0 0 24px rgba(255, 143, 171, 0.15);
+    text-shadow: 0 0 24px rgba(255, 143, 171, 0.2);
+    line-height: 1.35;
   }
 
-  /* 日记正文：衬线字体更阅读感，玻璃卡片包裹 */
-  .diary-body {
-    font-family: var(--font-serif);
-    font-size: 1.05rem;
-    line-height: 2.1;
-    color: var(--text-hi);
-    max-width: 680px;
-    margin: 0 auto;
-    padding: 42px 46px;
+  .warm-glass {
+    position: relative;
+    background: linear-gradient(135deg, rgba(28, 20, 38, 0.75), rgba(20, 14, 28, 0.55));
+    backdrop-filter: blur(18px);
+    -webkit-backdrop-filter: blur(18px);
+    border: 1px solid rgba(255, 143, 171, 0.18);
     border-radius: var(--r-lg);
+    box-shadow: 0 20px 50px -15px rgba(0, 0, 0, 0.7), 0 0 30px -10px var(--pad-glow-soft);
+  }
+
+  /* 日记正文排版（偏手账与温馨私密感） */
+  .diary-body {
+    padding: 42px 46px;
+    font-size: 1.05rem;
+    line-height: 2.15;
+    color: #f7f1f5;
   }
   @media (max-width: 640px) {
     .diary-body {
       padding: 28px 22px;
       font-size: 1rem;
-      line-height: 1.95;
+      line-height: 2.0;
     }
   }
+
   .diary-body :global(p) {
-    margin-bottom: 1.3em;
+    margin-bottom: 1.4em;
+    text-indent: 0;
   }
   .diary-body :global(h2) {
     font-family: var(--font-cute);
     font-size: 1.35rem;
-    color: var(--cat-300);
+    color: var(--warm-gold);
     margin: 1.6em 0 0.6em;
-  }
-  .diary-body :global(h3) {
-    font-family: var(--font-cute);
-    font-size: 1.18rem;
-    color: var(--pad-300);
-    margin: 1.4em 0 0.5em;
+    border-bottom: 1px dashed rgba(255, 209, 102, 0.25);
+    padding-bottom: 0.3em;
   }
   .diary-body :global(blockquote) {
     border-left: 3.5px solid var(--pad-400);
-    background: linear-gradient(90deg, rgba(255, 143, 171, 0.08), transparent);
-    padding: 10px 18px;
-    margin: 1.2em 0;
+    background: linear-gradient(90deg, rgba(255, 143, 171, 0.12), rgba(255, 209, 102, 0.04));
+    padding: 12px 18px;
+    margin: 1.3em 0;
     border-radius: 0 var(--r-sm) var(--r-sm) 0;
-    color: var(--text-mid);
+    color: #e0d4df;
   }
   .diary-body :global(strong) {
-    color: var(--pad-300);
+    color: var(--warm-gold);
     font-weight: 700;
+  }
+  .diary-body :global(em) {
+    color: var(--pad-300);
   }
   .diary-body :global(hr) {
     border: none;
-    border-top: 1px dashed rgba(255, 143, 171, 0.25);
+    border-top: 1px dashed rgba(255, 143, 171, 0.3);
     margin: 2.4em 0;
+  }
+  .diary-body :global(hr::after) {
+    content: "🌸";
+    background: #1c1426;
   }
 
   .diary-footer {
-    max-width: 680px;
     margin: 34px auto 0;
     display: flex;
-    justify-content: flex-start;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .btn-warm {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 22px;
+    border-radius: var(--r-sm);
+    border: 1px solid rgba(255, 143, 171, 0.4);
+    background: linear-gradient(135deg, rgba(255, 143, 171, 0.2), rgba(255, 209, 102, 0.15));
+    color: #fff;
+    font-family: var(--font-cute);
+    font-size: 0.92rem;
+    text-decoration: none;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
+    transition: all 0.25s ease;
+  }
+  .btn-warm:hover {
+    background: linear-gradient(135deg, rgba(255, 143, 171, 0.35), rgba(255, 209, 102, 0.25));
+    border-color: var(--pad-300);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 22px -4px var(--pad-glow);
+  }
+
+  .diary-stamp {
+    font-family: var(--font-cute);
+    font-size: 0.86rem;
+    color: var(--pad-300);
+    background: rgba(255, 143, 171, 0.1);
+    border: 1px solid rgba(255, 143, 171, 0.25);
+    padding: 4px 12px;
+    border-radius: 999px;
   }
 </style>

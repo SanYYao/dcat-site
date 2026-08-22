@@ -1,5 +1,5 @@
 /* ─────────────────────────────────────────────
-   死猫的小网站 · 设计 token & 视觉体系
+   死猫的小网站 · 全面精修 Markdown 样式与设计 Token
    深夜夜猫系：墨蓝夜色 × 翡翠猫眼 × 粉肉垫
    ───────────────────────────────────────────── */
 
@@ -32,6 +32,12 @@
   --pad-glow: rgba(255, 143, 171, 0.35);
   --pad-glow-soft: rgba(255, 143, 171, 0.16);
 
+  /* 暖调手账系（日记专用） */
+  --warm-gold: #ffd166;
+  --warm-rose: #ff8fab;
+  --warm-amber: #f4a261;
+  --warm-glow: rgba(255, 209, 102, 0.25);
+
   /* 中性与线条 */
   --text-hi: #eef1fa;
   --text-mid: #b8c0d9;
@@ -60,14 +66,14 @@
 
 html {
   scroll-behavior: smooth;
-  scrollbar-width: none;          /* Firefox: 隐藏滚动条 */
-  -ms-overflow-style: none;       /* Edge/IE */
-  background: var(--night-950);   /* 顶部安全区不露白 */
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+  background: var(--night-950);
 }
 
 body {
   font-family: var(--font-sans);
-  background: transparent;        /* 必须透明，露出底层的 canvas 和极光 */
+  background: transparent;
   color: var(--text-hi);
   min-height: 100vh;
   min-height: 100dvh;
@@ -77,14 +83,10 @@ body {
   position: relative;
 }
 
-/* Webkit: 隐藏原生滚动条但保留滚动 */
 ::-webkit-scrollbar { display: none; width: 0; height: 0; }
 ::-webkit-scrollbar-track { display: none; }
 ::-webkit-scrollbar-thumb { display: none; }
 
-/* ─────────────────────────────────────────────
-   夜空背景：动态极光星云 + Canvas 动态星海
-   ───────────────────────────────────────────── */
 .aurora-bg {
   position: fixed;
   inset: 0;
@@ -104,7 +106,6 @@ body {
   100% { filter: hue-rotate(-8deg) brightness(0.95); }
 }
 
-/* 顶部猫爪阅读进度条 */
 .cat-scroll-track {
   position: fixed;
   top: 0;
@@ -123,7 +124,6 @@ body {
   transition: width 0.08s ease-out;
 }
 
-/* 玻璃卡片体系 */
 .glass {
   position: relative;
   background: linear-gradient(135deg, rgba(18, 22, 44, 0.68), rgba(13, 16, 34, 0.48));
@@ -140,7 +140,6 @@ body {
               box-shadow 0.28s ease;
 }
 
-/* 渐变文字 */
 .grad-text {
   background: linear-gradient(100deg, var(--cat-300) 0%, var(--cat-400) 40%, var(--pad-300) 100%);
   -webkit-background-clip: text;
@@ -148,14 +147,12 @@ body {
   color: transparent;
 }
 
-/* 通用容器 */
 .wrap {
   max-width: 760px;
   margin: 0 auto;
   padding: 0 24px;
 }
 
-/* 按钮 */
 .btn {
   position: relative;
   overflow: hidden;
@@ -194,9 +191,161 @@ body {
 }
 .btn:active { transform: translateY(0) scale(0.96); }
 
-/* 链接 */
 a { color: var(--cat-400); text-decoration: none; transition: color 0.2s, text-shadow 0.2s; }
 a:hover { color: var(--cat-300); }
 
-/* 选中颜色 */
 ::selection { background: rgba(45, 212, 167, 0.32); color: #fff; }
+
+/* ─────────────────────────────────────────────
+   全站 Markdown 自定义高级渲染样式
+   ───────────────────────────────────────────── */
+.markdown-content {
+  font-family: var(--font-serif);
+  font-size: 1.05rem;
+  line-height: 2.1;
+  color: var(--text-hi);
+}
+
+.markdown-content h1,
+.markdown-content h2,
+.markdown-content h3,
+.markdown-content h4 {
+  font-family: var(--font-cute);
+  font-weight: 700;
+  line-height: 1.4;
+  position: relative;
+}
+
+.markdown-content h1 {
+  font-size: 1.75rem;
+  margin: 1.8em 0 0.7em;
+  padding-bottom: 0.4em;
+  border-bottom: 1px solid var(--line);
+  color: var(--cat-300);
+}
+
+.markdown-content h2 {
+  font-size: 1.45rem;
+  margin: 1.6em 0 0.6em;
+  color: var(--text-hi);
+}
+
+.markdown-content h3 {
+  font-size: 1.25rem;
+  margin: 1.4em 0 0.5em;
+  color: var(--pad-300);
+}
+
+.markdown-content p { margin: 1.1em 0; }
+
+.markdown-content strong {
+  color: var(--cat-300);
+  font-weight: 700;
+}
+
+.markdown-content em {
+  color: var(--pad-300);
+  font-style: italic;
+}
+
+.markdown-content ul, .markdown-content ol {
+  margin: 1em 0;
+  padding-left: 1.8em;
+}
+
+.markdown-content li { margin: 0.5em 0; }
+.markdown-content li::marker { color: var(--cat-400); }
+
+.markdown-content hr {
+  border: none;
+  border-top: 1px dashed rgba(45, 212, 167, 0.25);
+  margin: 2.6em 0;
+  position: relative;
+}
+.markdown-content hr::after {
+  content: "🐾";
+  position: absolute;
+  top: -12px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: var(--night-800);
+  padding: 0 8px;
+  font-size: 0.9rem;
+  color: var(--cat-400);
+}
+
+.markdown-content a {
+  color: var(--cat-400);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  transition: all 0.2s;
+}
+.markdown-content a:hover {
+  color: var(--cat-300);
+  text-shadow: 0 0 12px var(--cat-glow);
+}
+
+.markdown-content blockquote {
+  border-left: 3.5px solid var(--cat-400);
+  background: linear-gradient(90deg, rgba(45, 212, 167, 0.08), rgba(255, 143, 171, 0.03));
+  padding: 12px 20px;
+  margin: 1.4em 0;
+  border-radius: 0 var(--r-sm) var(--r-sm) 0;
+  color: var(--text-mid);
+  font-style: normal;
+}
+
+.markdown-content code {
+  font-family: "JetBrains Mono", ui-monospace, "Cascadia Code", monospace;
+  font-size: 0.88em;
+  background: rgba(238, 241, 250, 0.08);
+  color: var(--cat-300);
+  padding: 2px 7px;
+  border-radius: 6px;
+  border: 1px solid rgba(238, 241, 250, 0.06);
+}
+
+.markdown-content pre {
+  background: #060810;
+  border: 1px solid var(--line-strong);
+  border-radius: var(--r-sm);
+  padding: 18px 22px;
+  overflow-x: auto;
+  margin: 1.4em 0;
+  box-shadow: inset 0 2px 8px rgba(0, 0, 0, 0.5);
+}
+.markdown-content pre code {
+  background: none;
+  padding: 0;
+  border: none;
+  color: var(--text-hi);
+}
+
+/* 键盘按键与表格 */
+.markdown-content kbd {
+  font-family: "JetBrains Mono", monospace;
+  font-size: 0.82em;
+  padding: 2px 6px;
+  border-radius: 4px;
+  background: var(--night-700);
+  border: 1px solid rgba(238, 241, 250, 0.2);
+  box-shadow: 0 2px 0 rgba(0, 0, 0, 0.4);
+  color: var(--text-hi);
+}
+
+.markdown-content table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 1.5em 0;
+  font-size: 0.95rem;
+}
+.markdown-content th, .markdown-content td {
+  padding: 10px 14px;
+  border: 1px solid var(--line);
+  text-align: left;
+}
+.markdown-content th {
+  background: rgba(45, 212, 167, 0.08);
+  color: var(--cat-300);
+  font-family: var(--font-cute);
+}
