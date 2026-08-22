@@ -23,14 +23,14 @@
   --cat-500: #2dd4a7;
   --cat-400: #4ae3bd;
   --cat-300: #7df0d3;
-  --cat-glow: rgba(45, 212, 167, 0.45);
-  --cat-glow-soft: rgba(45, 212, 167, 0.18);
+  --cat-glow: rgba(45, 212, 167, 0.4);
+  --cat-glow-soft: rgba(45, 212, 167, 0.15);
 
   /* 粉肉垫（点缀色） */
   --pad-400: #ff8fab;
   --pad-300: #ffa8c0;
-  --pad-glow: rgba(255, 143, 171, 0.35);
-  --pad-glow-soft: rgba(255, 143, 171, 0.16);
+  --pad-glow: rgba(255, 143, 171, 0.3);
+  --pad-glow-soft: rgba(255, 143, 171, 0.14);
 
   /* 暖调手账系（日记专用） */
   --warm-gold: #ffd166;
@@ -119,7 +119,7 @@ body {
 }
 
 /* ─────────────────────────────────────────────
-   真实 Apple Liquid Glass 材质体系（三层架构）
+   真实 Apple Liquid Glass 材质体系（细腻高光版）
    ───────────────────────────────────────────── */
 
 .glass,
@@ -128,13 +128,12 @@ body {
   isolation: isolate;
   background: transparent;
   border-radius: var(--r-lg);
-  box-shadow: 0 20px 50px -15px rgba(0, 0, 0, 0.75);
+  box-shadow: 0 18px 45px -12px rgba(0, 0, 0, 0.7);
   transition: transform 0.3s cubic-bezier(0.2, 0.8, 0.2, 1),
-              border-color 0.3s ease,
               box-shadow 0.3s ease;
 }
 
-/* 第 1 层：SVG 物理折射层 (feDisplacementMap 光学扭曲背景) */
+/* 第 1 层：SVG 物理折射层 */
 .glass::before,
 .liquid-glass-card::before {
   content: "";
@@ -147,7 +146,7 @@ body {
   pointer-events: none;
 }
 
-/* 第 2 层：极通透晶体与高饱和度滤镜 (Ultra-clear Tint) */
+/* 第 2 层：极通透晶体与高饱和度滤镜 */
 .glass::after,
 .liquid-glass-card::after {
   content: "";
@@ -155,13 +154,13 @@ body {
   inset: 0;
   border-radius: inherit;
   z-index: -2;
-  background: rgba(18, 24, 48, 0.25);
-  backdrop-filter: blur(8px) saturate(190%) brightness(1.08);
-  -webkit-backdrop-filter: blur(8px) saturate(190%) brightness(1.08);
+  background: rgba(18, 24, 48, 0.22);
+  backdrop-filter: blur(8px) saturate(190%) brightness(1.06);
+  -webkit-backdrop-filter: blur(8px) saturate(190%) brightness(1.06);
   pointer-events: none;
 }
 
-/* 第 3 层：Specular 镜面双向高光反射外壳 (Specular Shell) */
+/* 第 3 层：超精细 1px / 0.75px 丝滑微光 Specular 外壳（去除了粗硬感） */
 .glass-specular-shell {
   position: absolute;
   inset: 0;
@@ -169,10 +168,28 @@ body {
   z-index: -1;
   pointer-events: none;
   box-shadow:
-    inset 1.5px 1.5px 1px 0 rgba(255, 255, 255, 0.65),
-    inset -1px -1px 1px 0 rgba(255, 255, 255, 0.25),
-    inset 0 0 20px 2px rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.12);
+    inset 0 1px 0 rgba(255, 255, 255, 0.4),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.25),
+    inset 0 0 12px rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  transition: all 0.3s ease;
+}
+
+/* ─────────────────────────────────────────────
+   全局超软布丁果冻触感动画（低阻尼、低动能、微小柔和Duang~）
+   ───────────────────────────────────────────── */
+@keyframes softPuddingJelly {
+  0% { transform: scale(1, 1); }
+  25% { transform: scale(1.028, 0.972); }
+  50% { transform: scale(0.985, 1.015); }
+  75% { transform: scale(1.008, 0.992); }
+  90% { transform: scale(0.996, 1.004); }
+  100% { transform: scale(1, 1); }
+}
+
+.jelly-active,
+.pudding-touch:active {
+  animation: softPuddingJelly 0.6s cubic-bezier(0.28, 0.84, 0.42, 1) forwards;
 }
 
 .grad-text {
@@ -224,7 +241,9 @@ body {
   transform: translateY(-2px);
   color: #fff;
 }
-.btn:active { transform: translateY(0) scale(0.96); }
+.btn:active {
+  animation: softPuddingJelly 0.5s cubic-bezier(0.28, 0.84, 0.42, 1) forwards;
+}
 
 a { color: var(--cat-400); text-decoration: none; transition: color 0.2s, text-shadow 0.2s; }
 a:hover { color: var(--cat-300); }
