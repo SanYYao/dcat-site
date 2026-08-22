@@ -639,15 +639,14 @@ const hasMore = articles.length > initialCount;
       ];
       let meowIdx = 0;
 
-      // ── 自适应帧率物理弹簧系统（高阻尼高力度，1.2s 收敛）──
+      // ── 自适应帧率物理弹簧系统（高力度，1.2s 收敛，带可见拉伸过冲）──
       // 推导：欠阻尼弹簧 x(t)=x0·e^(-ζωn·t)·cos(ωd·t)
       //   要求 1.2s 收敛到 1%  →  ζωn = ln(100)/1.2 ≈ 3.835
-      //   取高阻尼 ζ=0.9       →  ωn = 4.26 rad/s
-      //   k = ωn² = 18.2，c = 2ζωn = 7.67
-      //   初始力度 x0 = -0.25（压扁到 scale 0.75）
-      // 曲线：0s 压到 0.75 → 0.85s 回正 1.0 → 轻微过冲 1.002 → 1.2s 收敛
+      //   取 ζ=0.65（欠阻尼，过冲 ≈ 6.8%，拉伸肉眼可见）
+      //   → ωn = 5.9，k = ωn² = 34.8，c = 2ζωn = 7.67
+      //   点击给初速度冲击 v0 = -4.3 → 平滑压到 0.75 → 反弹拉伸到 1.07 → 1.2s 收敛
       const spring = {
-        stiffness: 18.2,
+        stiffness: 34.8,
         damping: 7.67,
         mass: 1,
         scale: 1,
@@ -683,10 +682,9 @@ const hasMore = articles.length > initialCount;
 
       requestAnimationFrame(tick);
 
-      // 点击：直接压到 0.75（大力度），弹簧按高阻尼 1.2s 归位
+      // 点击：给初速度冲击（平滑压扁→反弹拉伸→收敛），不跳变
       avatarBox.addEventListener('click', () => {
-        spring.scale = 0.75;
-        spring.vel = 0;
+        spring.vel = -4.3;
 
         clearTimeout(typeTimer);
         clearTimeout(hideTimer);
