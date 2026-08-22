@@ -59,7 +59,7 @@ const { Content } = await render(entry);
 
 <style>
   .diary-article {
-    padding: 50px 24px 30px;
+    padding: calc(64px + env(safe-area-inset-top, 0px)) 24px 30px;
     max-width: 680px;
   }
   .diary-header {

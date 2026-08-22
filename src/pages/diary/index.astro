@@ -63,7 +63,7 @@ const entries = (await getCollection('diary'))
 
 <style>
   .diary-hero {
-    padding: 68px 0 34px;
+    padding: calc(80px + env(safe-area-inset-top, 0px)) 0 34px;
     text-align: center;
   }
   .diary-hero-inner {
