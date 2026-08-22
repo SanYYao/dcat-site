@@ -34,6 +34,7 @@ const { title, description, publishedAt, tags = [] } = post.data;
       </header>
 
       <div class="article-body glass markdown-content">
+        <div class="glass-specular-shell"></div>
         <Content />
       </div>
 
@@ -80,6 +81,7 @@ const { title, description, publishedAt, tags = [] } = post.data;
 
     .article-body {
       padding: 42px 46px;
+      position: relative;
     }
 
     @media (max-width: 640px) {
@@ -151,7 +153,6 @@ const { title, description, publishedAt, tags = [] } = post.data;
   </style>
 
   <script>
-    // 回到顶部：下滑超过一屏才显示
     const backTop = document.getElementById('backTop');
     if (backTop) {
       const onScroll = () => {

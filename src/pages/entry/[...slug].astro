@@ -17,9 +17,7 @@ const { Content } = await render(entry);
 
 <BaseLayout title={entry.data.title} description={`死猫的日记 - ${entry.data.title}`} warm={true}>
   <article class="diary-article wrap">
-    <!-- 便签纸风格头部 -->
     <header class="diary-header">
-      <div class="diary-tape" aria-hidden="true"></div>
       <div class="diary-meta">
         <span class="diary-mood">{entry.data.mood}</span>
         <div class="diary-date-box">
@@ -44,8 +42,9 @@ const { Content } = await render(entry);
       <h1 class="diary-title">{entry.data.title}</h1>
     </header>
 
-    <!-- 暖色手账正文区 -->
-    <div class="diary-body warm-glass markdown-content">
+    <!-- 真实 Apple Liquid Glass 手账正文区 -->
+    <div class="diary-body glass markdown-content">
+      <div class="glass-specular-shell"></div>
       <Content />
     </div>
 
@@ -68,18 +67,6 @@ const { Content } = await render(entry);
     text-align: center;
     position: relative;
     padding-top: 10px;
-  }
-  .diary-tape {
-    position: absolute;
-    top: -12px;
-    left: 50%;
-    transform: translateX(-50%);
-    width: 90px;
-    height: 20px;
-    background: rgba(255, 209, 102, 0.4);
-    border: 1px dashed rgba(255, 209, 102, 0.6);
-    backdrop-filter: blur(4px);
-    border-radius: 2px;
   }
   .diary-meta {
     display: flex;
@@ -118,22 +105,12 @@ const { Content } = await render(entry);
     line-height: 1.35;
   }
 
-  .warm-glass {
-    position: relative;
-    background: linear-gradient(135deg, rgba(28, 20, 38, 0.75), rgba(20, 14, 28, 0.55));
-    backdrop-filter: blur(18px);
-    -webkit-backdrop-filter: blur(18px);
-    border: 1px solid rgba(255, 143, 171, 0.18);
-    border-radius: var(--r-lg);
-    box-shadow: 0 20px 50px -15px rgba(0, 0, 0, 0.7), 0 0 30px -10px var(--pad-glow-soft);
-  }
-
-  /* 日记正文排版（偏手账与温馨私密感） */
   .diary-body {
     padding: 42px 46px;
     font-size: 1.05rem;
     line-height: 2.15;
     color: #f7f1f5;
+    position: relative;
   }
   @media (max-width: 640px) {
     .diary-body {
