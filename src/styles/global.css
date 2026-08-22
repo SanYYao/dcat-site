@@ -98,13 +98,14 @@ body {
     radial-gradient(ellipse 80% 50% at 90% 110%, rgba(255, 143, 171, 0.14), transparent 60%),
     radial-gradient(ellipse 65% 65% at 75% 20%, rgba(34, 41, 78, 0.6), transparent 65%),
     linear-gradient(180deg, #060810 0%, #0a0d18 50%, #0d1122 100%);
-  animation: aurora-breath 14s ease-in-out infinite alternate;
+  /* 注意：禁用 filter 动画（hue-rotate/brightness 全屏每帧重算，iOS GPU 爆掉）。
+     改用法合成层友好的 opacity 微呼吸，几乎零开销。 */
+  animation: aurora-breathe 14s ease-in-out infinite alternate;
 }
 
-@keyframes aurora-breath {
-  0% { filter: hue-rotate(0deg) brightness(1); }
-  50% { filter: hue-rotate(10deg) brightness(1.08); }
-  100% { filter: hue-rotate(-8deg) brightness(0.95); }
+@keyframes aurora-breathe {
+  0% { opacity: 1; }
+  100% { opacity: 0.92; }
 }
 
 .cat-scroll-track {
@@ -126,48 +127,36 @@ body {
 }
 
 /* ─────────────────────────────────────────────
-   真实 Apple Liquid Glass 材质体系（半透厚润晶体版）
+   卡片玻璃拟态（性能优化版：轻量半透明 + GPU 合成层）
+   说明：iOS Safari 上大面积 backdrop-filter(blur 16px) 滚动时会每帧重采样背景，
+   直接把 GPU 打爆导致掉帧。这里改为：
+   - 半透明厚润底色（视觉接近，几乎零开销）
+   - 极轻 blur(4px) 仅保留一丝磨砂感（滚动时几乎不可察觉）
+   - 去掉无效且昂贵的 SVG url() backdrop-filter（iOS 不支持）
    ───────────────────────────────────────────── */
 
 .glass,
 .liquid-glass-card {
   position: relative;
   isolation: isolate;
-  background: transparent;
+  background: linear-gradient(135deg, rgba(20, 26, 52, 0.78), rgba(12, 16, 32, 0.68));
+  backdrop-filter: blur(4px) saturate(140%);
+  -webkit-backdrop-filter: blur(4px) saturate(140%);
   border-radius: var(--r-lg);
-  box-shadow: 0 18px 45px -12px rgba(0, 0, 0, 0.7);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 18px 45px -12px rgba(0, 0, 0, 0.75),
+              inset 0 1px 0 rgba(255, 255, 255, 0.2),
+              inset 0 -1px 0 rgba(0, 0, 0, 0.3);
+  /* GPU 合成层：transform 动画只走合成，不触发重排重绘 */
+  transform: translateZ(0);
+  will-change: transform;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
   transition: transform 0.3s cubic-bezier(0.2, 0.8, 0.2, 1),
-              box-shadow 0.3s ease;
+              border-color 0.3s ease;
 }
 
-/* 第 1 层：SVG 物理折射层 */
-.glass::before,
-.liquid-glass-card::before {
-  content: "";
-  position: absolute;
-  inset: 0;
-  border-radius: inherit;
-  z-index: -3;
-  backdrop-filter: url(#liquid-glass-refraction);
-  -webkit-backdrop-filter: url(#liquid-glass-refraction);
-  pointer-events: none;
-}
-
-/* 第 2 层：半透厚润暗晶体（0.68 不透明度，通透不发虚） */
-.glass::after,
-.liquid-glass-card::after {
-  content: "";
-  position: absolute;
-  inset: 0;
-  border-radius: inherit;
-  z-index: -2;
-  background: linear-gradient(135deg, rgba(20, 26, 52, 0.72), rgba(12, 16, 32, 0.62));
-  backdrop-filter: blur(16px) saturate(190%) brightness(1.05);
-  -webkit-backdrop-filter: blur(16px) saturate(190%) brightness(1.05);
-  pointer-events: none;
-}
-
-/* 第 3 层：超精细 1px 丝滑微光 Specular 外壳 */
+/* Specular 高光外壳：纯 box-shadow，无过渡动画（避免每帧重绘阴影） */
 .glass-specular-shell {
   position: absolute;
   inset: 0;
@@ -175,11 +164,10 @@ body {
   z-index: -1;
   pointer-events: none;
   box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.35),
-    inset 0 -1px 0 rgba(0, 0, 0, 0.3),
+    inset 0 1px 0 rgba(255, 255, 255, 0.3),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.25),
     inset 0 0 16px rgba(255, 255, 255, 0.02);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  transition: all 0.3s ease;
+  border: 1px solid rgba(255, 255, 255, 0.07);
 }
 
 /* ─────────────────────────────────────────────

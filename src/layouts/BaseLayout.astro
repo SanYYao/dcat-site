@@ -167,12 +167,24 @@ const mailtoUrl = `mailto:deadcat@dcat.sanyyao.com?subject=${mailSubject}&body=$
       const canvas = document.getElementById('starCanvas') as HTMLCanvasElement;
       if (canvas) {
         const ctx = canvas.getContext('2d');
-        let w = (canvas.width = window.innerWidth);
-        let h = (canvas.height = window.innerHeight);
+        // DPR 适配：retina 上限制最高 2x，避免 3x 像素导致每帧绘制量爆炸
+        const dpr = Math.min(window.devicePixelRatio || 1, 2);
+        const cssW = window.innerWidth;
+        const cssH = window.innerHeight;
+        let w = cssW;
+        let h = cssH;
+        canvas.width = cssW * dpr;
+        canvas.height = cssH * dpr;
+        ctx?.scale(dpr, dpr);
 
         window.addEventListener('resize', () => {
-          w = canvas.width = window.innerWidth;
-          h = canvas.height = window.innerHeight;
+          const cw = window.innerWidth;
+          const ch = window.innerHeight;
+          canvas.width = cw * dpr;
+          canvas.height = ch * dpr;
+          ctx?.scale(dpr, dpr);
+          w = cw;
+          h = ch;
           initStars();
         });
 
@@ -203,14 +215,16 @@ const mailtoUrl = `mailto:deadcat@dcat.sanyyao.com?subject=${mailSubject}&body=$
 
         function initStars() {
           stars = [];
-          const count = Math.floor((w * h) / 3200);
+          // 密度降低（/4500），减少每帧绘制量；移动端进一步减半
+          const isMobile = Math.min(w, h) < 768;
+          const count = Math.floor((w * h) / (isMobile ? 9000 : 4500));
           for (let i = 0; i < count; i++) {
             stars.push({
               x: Math.random() * w,
               y: Math.random() * h,
-              radius: Math.random() * 1.8 + 0.8,
-              alpha: Math.random() * 0.7 + 0.3,
-              speed: (Math.random() * 0.02 + 0.006) * (Math.random() > 0.5 ? 1 : -1),
+              radius: Math.random() * 1.4 + 0.5,
+              alpha: Math.random() * 0.6 + 0.3,
+              speed: (Math.random() * 0.018 + 0.005) * (Math.random() > 0.5 ? 1 : -1),
               color: starColors[Math.floor(Math.random() * starColors.length)],
             });
           }
@@ -248,12 +262,22 @@ const mailtoUrl = `mailto:deadcat@dcat.sanyyao.com?subject=${mailSubject}&body=$
             if (s.alpha > 0.95 || s.alpha < 0.25) {
               s.speed = -s.speed;
             }
+            // 大星星用预渲染 radial-gradient 光晕（不每帧 blur，性能友好）
+            if (s.radius > 1.2) {
+              const glow = ctx.createRadialGradient(s.x, s.y, 0, s.x, s.y, s.radius * 3);
+              glow.addColorStop(0, s.color);
+              glow.addColorStop(0.35, s.color);
+              glow.addColorStop(1, 'rgba(0,0,0,0)');
+              ctx.fillStyle = glow;
+              ctx.globalAlpha = Math.max(0, Math.min(1, s.alpha)) * 0.4;
+              ctx.beginPath();
+              ctx.arc(s.x, s.y, s.radius * 3, 0, Math.PI * 2);
+              ctx.fill();
+            }
             ctx.beginPath();
             ctx.arc(s.x, s.y, s.radius, 0, Math.PI * 2);
             ctx.fillStyle = s.color;
             ctx.globalAlpha = Math.max(0, Math.min(1, s.alpha));
-            ctx.shadowBlur = s.radius > 1.4 ? 6 : 0;
-            ctx.shadowColor = s.color;
             ctx.fill();
           }
 
@@ -340,7 +364,9 @@ const mailtoUrl = `mailto:deadcat@dcat.sanyyao.com?subject=${mailSubject}&body=$
         gap: 12px;
       }
 
-      /* 核心独立胶囊材质：半透厚润深色暗晶体（0.72 不透明度，通透不发虚） */
+      /* 核心独立胶囊材质：半透厚润深色暗晶体（性能优化版）
+         去掉了 iOS 不支持的 SVG url() backdrop-filter 与 blur(16px) 重采样，
+         改轻量半透明 + GPU 合成层，滚动不掉帧 */
       .liquid-capsule {
         pointer-events: auto;
         position: relative;
@@ -349,38 +375,23 @@ const mailtoUrl = `mailto:deadcat@dcat.sanyyao.com?subject=${mailSubject}&body=$
         align-items: center;
         text-decoration: none;
         border-radius: 999px;
-        background: transparent;
-        box-shadow: 0 16px 36px -8px rgba(0, 0, 0, 0.7);
+        background: linear-gradient(135deg, rgba(22, 28, 56, 0.82), rgba(13, 17, 36, 0.72));
+        backdrop-filter: blur(4px) saturate(140%);
+        -webkit-backdrop-filter: blur(4px) saturate(140%);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        box-shadow: 0 16px 36px -8px rgba(0, 0, 0, 0.7),
+                    inset 0 1px 0 rgba(255, 255, 255, 0.25),
+                    inset 0 -1px 0 rgba(0, 0, 0, 0.3);
+        /* GPU 合成层：transform 动画只走合成 */
+        transform: translateZ(0);
+        will-change: transform;
+        backface-visibility: hidden;
+        -webkit-backface-visibility: hidden;
         transition: transform 0.35s cubic-bezier(0.2, 0.8, 0.2, 1),
-                    box-shadow 0.35s ease;
+                    border-color 0.3s ease;
       }
 
-      /* 第 1 层：SVG 真实物理折射 */
-      .liquid-capsule::before {
-        content: "";
-        position: absolute;
-        inset: 0;
-        border-radius: inherit;
-        z-index: -3;
-        backdrop-filter: url(#liquid-glass-refraction);
-        -webkit-backdrop-filter: url(#liquid-glass-refraction);
-        pointer-events: none;
-      }
-
-      /* 第 2 层：半透厚润晶体层（0.72 不透明度，通透且不发虚） */
-      .liquid-capsule::after {
-        content: "";
-        position: absolute;
-        inset: 0;
-        border-radius: inherit;
-        z-index: -2;
-        background: linear-gradient(135deg, rgba(22, 28, 56, 0.75), rgba(13, 17, 36, 0.65));
-        backdrop-filter: blur(16px) saturate(190%) brightness(1.08);
-        -webkit-backdrop-filter: blur(16px) saturate(190%) brightness(1.08);
-        pointer-events: none;
-      }
-
-      /* 第 3 层：超精细 1px 镜面微光切边 */
+      /* 镜面微光切边：纯 box-shadow，无动画 */
       .glass-shine {
         position: absolute;
         inset: 0;
@@ -388,11 +399,10 @@ const mailtoUrl = `mailto:deadcat@dcat.sanyyao.com?subject=${mailSubject}&body=$
         z-index: -1;
         pointer-events: none;
         box-shadow:
-          inset 0 1px 0 rgba(255, 255, 255, 0.45),
-          inset 0 -1px 0 rgba(0, 0, 0, 0.3),
-          inset 0 0 12px rgba(255, 255, 255, 0.04);
-        border: 1px solid rgba(255, 255, 255, 0.1);
-        transition: all 0.3s ease;
+          inset 0 1px 0 rgba(255, 255, 255, 0.35),
+          inset 0 -1px 0 rgba(0, 0, 0, 0.25),
+          inset 0 0 12px rgba(255, 255, 255, 0.03);
+        border: 1px solid rgba(255, 255, 255, 0.08);
       }
 
       /* 品牌左胶囊 */
