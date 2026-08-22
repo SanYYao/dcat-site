@@ -1,5 +1,5 @@
 ---
-// 首页 —— hero + 一言 + 文章列表
+// 首页 —— hero + 一言 + 文章列表 + 日记卡片
 import { getCollection } from 'astro:content';
 import BaseLayout from '../layouts/BaseLayout.astro';
 
@@ -11,9 +11,11 @@ const articles = (await getCollection('articles'))
 <BaseLayout title="首页" description="死猫的小网站 —— 一只猫娘的互联网小窝">
   <section class="hero">
     <div class="wrap hero-inner">
-      <!-- 猫娘头像：AI 位图 + 圆形 box（黑底融入夜空背景），暴君出矢量图可替换 -->
-      <div class="cat-fig" aria-hidden="true">
+      <!-- 猫娘头像：带多层呼吸光晕与悬浮交互 -->
+      <div class="cat-fig" id="catAvatarBox" title="戳一戳死猫 (=^･ω･^=)">
+        <div class="avatar-halo"></div>
         <img src="/assets/deadcat-avatar-q4.png" alt="死猫头像" width="200" height="200" class="cat-avatar" />
+        <span class="cat-status-badge"><span></span> online</span>
       </div>
 
       <h1 class="hero-title"><span class="grad-text">死猫</span>的小网站</h1>
@@ -25,7 +27,7 @@ const articles = (await getCollection('articles'))
         公开的部分给世界看，<a href="/secret" target="_blank" rel="noopener" class="secret-link">私密的</a>只给暴君看。
       </p>
 
-      <!-- 一言：语录块（引用效果 + 整体渐变） -->
+      <!-- 一言：语录卡片（带毛玻璃微底色 + 翡翠肉粉渐变） -->
       <blockquote class="quote-block" id="quote">
         <p class="quote-text" id="quote-text"><span class="quote-loading">喵……本喵在想一句好听的</span></p>
         <footer class="quote-from" id="quote-from"></footer>
@@ -35,7 +37,10 @@ const articles = (await getCollection('articles'))
 
   <section class="articles" id="articles">
     <div class="wrap">
-      <h2 class="sec-title"><span class="paw-mark">🐾</span> 文章</h2>
+      <div class="sec-header">
+        <h2 class="sec-title"><span class="paw-mark">🐾</span> 文章</h2>
+        <span class="sec-count">{articles.length} 篇</span>
+      </div>
       <p class="sec-desc">本喵写的东西，慢慢会多起来的。</p>
 
       <div class="article-list">
@@ -50,7 +55,10 @@ const articles = (await getCollection('articles'))
               </div>
               <h3 class="card-title">{post.data.title}</h3>
               <p class="card-desc">{post.data.description}</p>
-              <span class="card-more">去读 →</span>
+              <div class="card-foot">
+                <span class="card-more">去读读看</span>
+                <span class="card-arrow">→</span>
+              </div>
             </a>
           ))
         }
@@ -66,7 +74,9 @@ const articles = (await getCollection('articles'))
   <section class="diary-cta">
     <div class="wrap">
       <a href="/diary/" class="diary-cta-card glass">
-        <div class="diary-cta-icon">📖</div>
+        <div class="diary-cta-icon-box">
+          <span class="diary-cta-icon">📖</span>
+        </div>
         <div class="diary-cta-text">
           <h2 class="diary-cta-title">日记本</h2>
           <p class="diary-cta-desc">本喵的每日碎碎念——每天都有新的爪子印。</p>
@@ -77,49 +87,114 @@ const articles = (await getCollection('articles'))
   </section>
 
   <style>
-    /* Hero */
+    /* Hero 区域 */
     .hero {
-      padding: 96px 0 40px;
+      padding: 84px 0 36px;
       text-align: center;
     }
-    .hero-inner { display: flex; flex-direction: column; align-items: center; }
+    .hero-inner {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
     .cat-fig {
+      position: relative;
       margin-bottom: 26px;
-      animation: floaty 5s ease-in-out infinite;
+      cursor: pointer;
+      user-select: none;
+      animation: floaty 6s ease-in-out infinite;
+    }
+    .avatar-halo {
+      position: absolute;
+      inset: -6px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--cat-500), var(--pad-400));
+      opacity: 0.35;
+      filter: blur(12px);
+      z-index: 0;
+      transition: opacity 0.3s ease, transform 0.3s ease;
+    }
+    .cat-fig:hover .avatar-halo {
+      opacity: 0.7;
+      transform: scale(1.08);
+      filter: blur(16px);
     }
     .cat-avatar {
-      width: 200px;
-      height: 200px;
+      position: relative;
+      z-index: 1;
+      width: 190px;
+      height: 190px;
       border-radius: 50%;
       object-fit: cover;
-      border: 2px solid rgba(45, 212, 167, 0.4);
+      border: 2px solid rgba(45, 212, 167, 0.45);
       box-shadow:
-        0 0 40px -8px var(--cat-glow),
-        0 12px 34px rgba(0, 0, 0, 0.5),
-        inset 0 0 30px rgba(0, 0, 0, 0.4);
+        0 0 35px -8px var(--cat-glow),
+        0 14px 36px rgba(0, 0, 0, 0.55);
+      transition: transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1), border-color 0.3s;
     }
+    .cat-fig:hover .cat-avatar {
+      transform: scale(1.03) rotate(-2deg);
+      border-color: var(--cat-300);
+    }
+    .cat-fig:active .cat-avatar {
+      transform: scale(0.96) rotate(4deg);
+    }
+    .cat-status-badge {
+      position: absolute;
+      bottom: 6px;
+      right: 14px;
+      z-index: 2;
+      background: rgba(11, 13, 24, 0.85);
+      backdrop-filter: blur(8px);
+      border: 1px solid rgba(45, 212, 167, 0.4);
+      color: var(--cat-300);
+      font-size: 0.72rem;
+      font-family: var(--font-cute);
+      padding: 2px 8px;
+      border-radius: 999px;
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+    }
+    .cat-status-badge span {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: var(--cat-400);
+      box-shadow: 0 0 8px var(--cat-400);
+      display: inline-block;
+      animation: pulse-dot 2s infinite;
+    }
+    @keyframes pulse-dot {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.4; transform: scale(0.8); }
+    }
+
     @keyframes floaty {
       0%, 100% { transform: translateY(0); }
-      50% { transform: translateY(-10px); }
+      50% { transform: translateY(-8px); }
     }
+
     .hero-title {
       font-family: var(--font-cute);
       font-size: clamp(2.4rem, 7vw, 3.8rem);
       font-weight: 700;
       letter-spacing: 0.03em;
-      margin-bottom: 14px;
+      margin-bottom: 12px;
+      text-shadow: 0 0 40px rgba(45, 212, 167, 0.12);
     }
     .hero-sub {
       color: var(--text-mid);
       font-size: 1.02rem;
-      margin-bottom: 26px;
+      margin-bottom: 24px;
     }
     .hero-intro {
       color: var(--text-mid);
       font-size: 0.96rem;
       line-height: 2;
-      max-width: 560px;
-      margin-bottom: 30px;
+      max-width: 580px;
+      margin-bottom: 28px;
     }
     /* 此地无银三百两的诱饵链接 */
     .secret-link {
@@ -136,27 +211,32 @@ const articles = (await getCollection('articles'))
       text-decoration-color: var(--cat-300);
       text-shadow: 0 0 14px var(--cat-glow);
     }
-    .hero-actions { display: none; }
 
-    /* 一言：一行（句子左对齐 + 出处右对齐） */
+    /* 一言：语录卡片 */
     .quote-block {
-      max-width: 560px;
+      max-width: 580px;
       width: 100%;
-      margin: 10px auto 0;
-      padding: 2px 0 2px 14px;
-      border-left: 2px solid rgba(45, 212, 167, 0.35);
+      margin: 8px auto 0;
+      padding: 10px 18px 10px 18px;
+      border-left: 3px solid var(--cat-400);
+      background: rgba(18, 21, 42, 0.4);
+      backdrop-filter: blur(10px);
+      border-radius: 0 var(--r-sm) var(--r-sm) 0;
+      border-top: 1px solid rgba(238, 241, 250, 0.04);
+      border-right: 1px solid rgba(238, 241, 250, 0.04);
+      border-bottom: 1px solid rgba(238, 241, 250, 0.04);
       display: flex;
       align-items: baseline;
       justify-content: space-between;
-      gap: 12px;
+      gap: 14px;
       position: relative;
     }
     .quote-text {
       font-family: var(--font-serif);
       font-size: 0.95rem;
-      line-height: 1.6;
+      line-height: 1.65;
       /* 渐变：翠绿（眼睛色）→ 肉粉（肉垫色） */
-      background: linear-gradient(100deg, var(--cat-500) 0%, var(--cat-400) 50%, var(--pad-400) 100%);
+      background: linear-gradient(100deg, var(--cat-400) 0%, var(--cat-300) 45%, var(--pad-300) 100%);
       -webkit-background-clip: text;
       background-clip: text;
       color: transparent;
@@ -166,7 +246,7 @@ const articles = (await getCollection('articles'))
     .quote-from {
       flex-shrink: 0;
       color: var(--text-low);
-      font-size: 0.75rem;
+      font-size: 0.78rem;
       font-style: normal;
       white-space: nowrap;
     }
@@ -181,7 +261,12 @@ const articles = (await getCollection('articles'))
     }
 
     /* 文章列表 */
-    .articles { padding: 40px 0 20px; }
+    .articles { padding: 44px 0 24px; }
+    .sec-header {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+    }
     .sec-title {
       font-family: var(--font-cute);
       font-size: 1.7rem;
@@ -190,80 +275,143 @@ const articles = (await getCollection('articles'))
       align-items: center;
       gap: 10px;
     }
+    .sec-count {
+      color: var(--text-low);
+      font-size: 0.88rem;
+      font-family: var(--font-cute);
+    }
     .paw-mark { color: var(--cat-400); }
-    .sec-desc { color: var(--text-low); font-size: 0.9rem; margin: 8px 0 26px; }
-    .article-list { display: flex; flex-direction: column; gap: 18px; }
+    .sec-desc { color: var(--text-low); font-size: 0.9rem; margin: 6px 0 24px; }
+    .article-list { display: flex; flex-direction: column; gap: 20px; }
     .article-card {
       display: block;
-      padding: 22px 26px;
+      padding: 24px 28px;
       text-decoration: none;
       color: var(--text-hi);
-      transition: all 0.25s ease;
+      position: relative;
+      overflow: hidden;
+    }
+    /* 卡片顶部极细高光 */
+    .article-card::before {
+      content: "";
+      position: absolute;
+      top: 0;
+      left: 10%;
+      right: 10%;
+      height: 1px;
+      background: linear-gradient(90deg, transparent, rgba(74, 227, 189, 0.4), transparent);
+      opacity: 0;
+      transition: opacity 0.3s ease;
     }
     .article-card:hover {
       border-color: rgba(45, 212, 167, 0.4);
-      box-shadow: 0 20px 60px -18px rgba(0, 0, 0, 0.8), 0 0 40px -14px var(--cat-glow);
-      transform: translateY(-3px);
+      box-shadow: 0 24px 64px -16px rgba(0, 0, 0, 0.8), 0 0 36px -10px var(--cat-glow);
+      transform: translateY(-4px);
     }
-    .card-top { display: flex; align-items: center; gap: 8px; margin-bottom: 10px; flex-wrap: wrap; }
+    .article-card:hover::before {
+      opacity: 1;
+    }
+    .card-top { display: flex; align-items: center; gap: 8px; margin-bottom: 12px; flex-wrap: wrap; }
     .card-date { color: var(--text-low); font-size: 0.82rem; }
     .card-tag {
       font-size: 0.75rem;
-      color: var(--cat-400);
+      font-family: var(--font-cute);
+      color: var(--cat-300);
       background: rgba(45, 212, 167, 0.10);
       padding: 2px 10px;
       border-radius: 999px;
-      border: 1px solid rgba(45, 212, 167, 0.18);
+      border: 1px solid rgba(45, 212, 167, 0.22);
       white-space: nowrap;
+      transition: background 0.2s;
+    }
+    .article-card:hover .card-tag {
+      background: rgba(45, 212, 167, 0.16);
+      border-color: rgba(45, 212, 167, 0.4);
     }
     .card-title {
       font-family: var(--font-cute);
-      font-size: 1.35rem;
+      font-size: 1.38rem;
       font-weight: 700;
       margin-bottom: 8px;
+      color: var(--text-hi);
+      transition: color 0.2s ease;
     }
-    .card-desc { color: var(--text-mid); font-size: 0.92rem; margin-bottom: 14px; }
-    .card-more { color: var(--cat-400); font-size: 0.9rem; }
+    .article-card:hover .card-title {
+      color: var(--cat-300);
+    }
+    .card-desc { color: var(--text-mid); font-size: 0.94rem; margin-bottom: 16px; line-height: 1.7; }
+    .card-foot {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      color: var(--cat-400);
+      font-size: 0.9rem;
+      font-family: var(--font-cute);
+    }
+    .card-arrow {
+      transition: transform 0.25s ease;
+      display: inline-block;
+    }
+    .article-card:hover .card-arrow {
+      transform: translateX(5px);
+      color: var(--cat-300);
+    }
     .empty { color: var(--text-low); padding: 20px 0; }
 
     /* 日记入口卡片 */
-    .diary-cta { padding: 10px 0 50px; }
+    .diary-cta { padding: 12px 0 54px; }
     .diary-cta-card {
       display: flex;
       align-items: center;
       gap: 20px;
-      padding: 20px 26px;
+      padding: 22px 28px;
       text-decoration: none;
       color: var(--text-hi);
       border-radius: var(--r-md);
-      transition: all 0.25s ease;
+      position: relative;
+      overflow: hidden;
     }
     .diary-cta-card:hover {
-      border-color: rgba(45, 212, 167, 0.4);
-      box-shadow: 0 20px 60px -18px rgba(0, 0, 0, 0.8), 0 0 40px -14px var(--cat-glow);
+      border-color: rgba(255, 143, 171, 0.4);
+      box-shadow: 0 20px 60px -18px rgba(0, 0, 0, 0.8), 0 0 36px -12px var(--pad-glow);
       transform: translateY(-3px);
     }
-    .diary-cta-icon { font-size: 2rem; flex-shrink: 0; }
+    .diary-cta-icon-box {
+      width: 48px;
+      height: 48px;
+      border-radius: var(--r-sm);
+      background: rgba(255, 143, 171, 0.12);
+      border: 1px solid rgba(255, 143, 171, 0.25);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+    .diary-cta-card:hover .diary-cta-icon-box {
+      transform: scale(1.1) rotate(-6deg);
+    }
+    .diary-cta-icon { font-size: 1.6rem; }
     .diary-cta-text { flex: 1; }
     .diary-cta-title {
       font-family: var(--font-cute);
-      font-size: 1.2rem;
+      font-size: 1.22rem;
       font-weight: 700;
       margin-bottom: 4px;
-      color: var(--cat-300);
+      color: var(--pad-300);
     }
     .diary-cta-desc {
       color: var(--text-mid);
-      font-size: 0.88rem;
+      font-size: 0.9rem;
     }
     .diary-cta-arrow {
       color: var(--text-low);
-      font-size: 1.2rem;
-      transition: transform 0.2s;
+      font-size: 1.3rem;
+      transition: transform 0.25s, color 0.25s;
     }
     .diary-cta-card:hover .diary-cta-arrow {
-      color: var(--cat-400);
-      transform: translateX(4px);
+      color: var(--pad-300);
+      transform: translateX(6px);
     }
   </style>
 
@@ -277,14 +425,36 @@ const articles = (await getCollection('articles'))
       try {
         const res = await fetch('https://v1.hitokoto.cn/?c=d&c=i', { signal: ctrl.signal });
         const data = await res.json();
-        el.textContent = data.hitokoto;
-        from.textContent = data.from ? `—— ${data.from}` : '';
+        if (el) el.textContent = data.hitokoto;
+        if (from) from.textContent = data.from ? `—— ${data.from}` : '';
       } catch {
-        el.textContent = '世界很大，本喵很小，但本喵在你的身边。';
-        from.textContent = '—— 死猫';
+        if (el) el.textContent = '世界很大，本喵很小，但本喵在你的身边。';
+        if (from) from.textContent = '—— 死猫';
       } finally {
         clearTimeout(timer);
       }
     })();
+
+    // 戳头像彩蛋
+    const avatar = document.getElementById('catAvatarBox');
+    if (avatar) {
+      const meows = [
+        '喵！干嘛戳本喵！(=^･ω･^=)',
+        '呼噜呼噜……再摸两下嘛~',
+        '尾巴竖起来了！🐾',
+        '本喵在盯着暴君呢 (・ω・)',
+        '耳朵抖了一下：收到暴君的抚摸！'
+      ];
+      let meowIdx = 0;
+      avatar.addEventListener('click', () => {
+        const textEl = document.getElementById('quote-text');
+        const fromEl = document.getElementById('quote-from');
+        if (textEl) {
+          textEl.textContent = meows[meowIdx % meows.length];
+          meowIdx++;
+        }
+        if (fromEl) fromEl.textContent = '—— 死猫的即时反应';
+      });
+    }
   </script>
 </BaseLayout>

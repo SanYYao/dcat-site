@@ -16,8 +16,8 @@ const siteTitle = "死猫的小网站";
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
     <meta name="description" content={description} />
-    <meta name="theme-color" content="#0b0d18" />
-    <meta property="og:title" content={title} />
+    <meta name="theme-color" content="#070810" />
+    <meta property="og:title" content={`${title} · ${siteTitle}`} />
     <meta property="og:description" content={description} />
     <meta property="og:type" content="website" />
     <title>{title} · {siteTitle}</title>
@@ -25,13 +25,19 @@ const siteTitle = "死猫的小网站";
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
-      href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;600;700&family=Noto+Sans+SC:wght@400;500;700&display=swap"
+      href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;600;700&family=Noto+Sans+SC:wght@400;500;700&family=JetBrains+Mono:wght@400;500&display=swap"
       rel="stylesheet"
     />
   </head>
   <body>
-    <div class="aurora-bg"></div>
-    <div class="stars"></div>
+    <!-- 顶部极光与星空背景 -->
+    <div class="aurora-bg" aria-hidden="true"></div>
+    <div class="stars" aria-hidden="true"></div>
+
+    <!-- 顶部猫爪滚动阅读指示线 -->
+    <div class="cat-scroll-track" aria-hidden="true">
+      <div class="cat-scroll-bar" id="catScrollBar"></div>
+    </div>
 
     <header class="site-head">
       <div class="wrap head-inner">
@@ -80,15 +86,33 @@ const siteTitle = "死猫的小网站";
       </div>
     </footer>
 
+    <!-- 全局轻量互动脚本 -->
+    <script>
+      // 滚动进度条
+      const scrollBar = document.getElementById('catScrollBar');
+      if (scrollBar) {
+        const updateProgress = () => {
+          const docH = document.documentElement.scrollHeight - window.innerHeight;
+          if (docH > 0) {
+            const pct = Math.min(100, Math.max(0, (window.scrollY / docH) * 100));
+            scrollBar.style.width = pct + '%';
+          }
+        };
+        window.addEventListener('scroll', updateProgress, { passive: true });
+        updateProgress();
+      }
+    </script>
+
     <style>
       .site-head {
         position: sticky;
         top: 0;
         z-index: 50;
-        backdrop-filter: blur(14px);
-        -webkit-backdrop-filter: blur(14px);
-        background: rgba(7, 8, 16, 0.6);
+        backdrop-filter: blur(16px);
+        -webkit-backdrop-filter: blur(16px);
+        background: rgba(7, 8, 16, 0.65);
         border-bottom: 1px solid var(--line);
+        transition: background 0.3s ease;
       }
       .head-inner {
         display: flex;
@@ -103,21 +127,34 @@ const siteTitle = "死猫的小网站";
         gap: 8px;
         color: var(--text-hi);
         font-weight: 700;
-        font-size: 1.05rem;
+        font-size: 1.08rem;
         font-family: var(--font-cute);
         letter-spacing: 0.02em;
+        transition: transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1), color 0.2s;
       }
-      .brand:hover { color: var(--cat-300); }
-      .brand-paw { font-size: 1.1rem; }
+      .brand:hover {
+        color: var(--cat-300);
+        transform: scale(1.02);
+      }
+      .brand-paw {
+        font-size: 1.15rem;
+        display: inline-block;
+        transition: transform 0.3s ease;
+      }
+      .brand:hover .brand-paw {
+        transform: rotate(-15deg) scale(1.15);
+      }
       .head-nav {
         display: flex;
-        gap: 22px;
-        font-size: 0.92rem;
+        gap: 24px;
+        font-size: 0.94rem;
+        font-family: var(--font-cute);
       }
       .head-nav a {
         color: var(--text-mid);
         padding: 4px 2px;
         position: relative;
+        transition: color 0.2s ease;
       }
       .head-nav a::after {
         content: "";
@@ -128,28 +165,33 @@ const siteTitle = "死猫的小网站";
         height: 2px;
         border-radius: 2px;
         background: linear-gradient(90deg, var(--cat-400), var(--pad-300));
-        transition: width 0.25s ease;
+        transition: width 0.25s cubic-bezier(0.4, 0, 0.2, 1);
       }
-      .head-nav a:hover { color: var(--cat-300); }
-      .head-nav a:hover::after { width: 100%; }
+      .head-nav a:hover {
+        color: var(--cat-300);
+      }
+      .head-nav a:hover::after {
+        width: 100%;
+      }
 
       .site-foot {
         margin-top: 90px;
-        padding: 36px 0 44px;
-        padding-bottom: calc(44px + env(safe-area-inset-bottom, 0px));
+        padding: 40px 0 48px;
+        padding-bottom: calc(48px + env(safe-area-inset-bottom, 0px));
         border-top: 1px solid var(--line);
+        background: linear-gradient(180deg, transparent 0%, rgba(11, 13, 24, 0.6) 100%);
       }
       .foot-inner {
         display: flex;
         flex-direction: column;
         align-items: center;
-        gap: 6px;
+        gap: 8px;
         text-align: center;
       }
       .site-foot p { color: var(--text-low); font-size: 0.95rem; }
       .foot-stamp { font-size: 1rem; }
-      .stamp-paw { color: var(--cat-400); }
-      .stamp-heart { color: var(--pad-300); }
+      .stamp-paw { color: var(--cat-400); margin-right: 2px; }
+      .stamp-heart { color: var(--pad-300); margin-left: 2px; }
       .stamp-link {
         color: var(--cat-300);
         font-weight: 700;
@@ -167,15 +209,15 @@ const siteTitle = "死猫的小网站";
         display: flex;
         align-items: center;
         justify-content: center;
-        gap: 14px;
-        margin-top: 8px;
+        gap: 16px;
+        margin-top: 6px;
         flex-wrap: wrap;
       }
-      .foot-copy { margin: 0; }
+      .foot-copy { margin: 0; font-size: 0.88rem; }
       .foot-icons {
         display: inline-flex;
         align-items: center;
-        gap: 8px;
+        gap: 10px;
       }
       .foot-icon {
         display: inline-flex;
@@ -185,18 +227,18 @@ const siteTitle = "死猫的小网站";
         height: 34px;
         border-radius: 50%;
         /* MBE 风格：粗描边 + 圆润 */
-        border: 2.5px solid var(--cat-400);
+        border: 2px solid var(--cat-400);
         background: var(--night-800);
         color: var(--cat-400);
         box-shadow: 0 0 14px -4px var(--cat-glow);
-        transition: all 0.25s ease;
+        transition: all 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
       }
       .foot-icon:hover {
         border-color: var(--cat-300);
-        color: var(--cat-300);
+        color: #fff;
         background: var(--night-700);
-        box-shadow: 0 0 24px -4px var(--cat-glow);
-        transform: translateY(-2px) rotate(-6deg);
+        box-shadow: 0 0 24px -2px var(--cat-glow);
+        transform: translateY(-3px) rotate(-8deg) scale(1.08);
       }
       .foot-icon svg { display: block; }
     </style>
