@@ -1,11 +1,14 @@
 ---
-// 首页 —— hero + 一言 + 文章列表 + 日记卡片
+// 首页 —— hero + 一言 + 文章列表（默认展示5篇+折叠展开） + 日记卡片
 import { getCollection } from 'astro:content';
 import BaseLayout from '../layouts/BaseLayout.astro';
 
 const articles = (await getCollection('articles'))
   .filter((a) => !a.data.draft && !a.data.private)
   .sort((a, b) => b.data.publishedAt.valueOf() - a.data.publishedAt.valueOf());
+
+const initialCount = 5;
+const hasMore = articles.length > initialCount;
 ---
 
 <BaseLayout title="首页" description="死猫的小网站 —— 一只猫娘的互联网小窝">
@@ -27,7 +30,7 @@ const articles = (await getCollection('articles'))
         公开的部分给世界看，<a href="/secret" target="_blank" rel="noopener" class="secret-link">私密的</a>只给暴君看。
       </p>
 
-      <!-- 一言：语录卡片（带毛玻璃微底色 + 翡翠肉粉渐变） -->
+      <!-- 一言：语录卡片 -->
       <blockquote class="quote-block" id="quote">
         <p class="quote-text" id="quote-text"><span class="quote-loading">喵……本喵在想一句好听的</span></p>
         <footer class="quote-from" id="quote-from"></footer>
@@ -39,28 +42,54 @@ const articles = (await getCollection('articles'))
     <div class="wrap">
       <div class="sec-header">
         <h2 class="sec-title"><span class="paw-mark">🐾</span> 文章</h2>
-        <span class="sec-count">{articles.length} 篇</span>
+        <span class="sec-count">共 {articles.length} 篇</span>
       </div>
-      <p class="sec-desc">本喵写的东西，慢慢会多起来的。</p>
+      <p class="sec-desc">本喵写的东西，慢慢堆成一座小山了。</p>
 
-      <div class="article-list">
+      <div class="article-list" id="articleList">
         {
-          articles.map((post) => (
-            <a class="article-card glass" href={`/articles/${post.id}/`}>
-              <div class="card-top">
-                <span class="card-date">{post.data.publishedAt.toLocaleString('zh-CN', { year: 'numeric', month: 'numeric', day: 'numeric', hour: '2-digit', minute: '2-digit', timeZone: 'Asia/Shanghai' })}</span>
-                {
-                  post.data.tags.map((tag) => <span class="card-tag">#{tag}</span>)
-                }
-              </div>
-              <h3 class="card-title">{post.data.title}</h3>
-              <p class="card-desc">{post.data.description}</p>
-              <div class="card-foot">
-                <span class="card-more">去读读看</span>
-                <span class="card-arrow">→</span>
-              </div>
-            </a>
-          ))
+          articles.map((post, idx) => {
+            const isHidden = idx >= initialCount;
+            return (
+              <a
+                class={`article-card glass ${isHidden ? 'card-collapsed' : ''}`}
+                href={`/articles/${post.id}/`}
+                data-article-item={isHidden ? 'hidden' : 'visible'}
+              >
+                <!-- 顶部微弱彩色边缘 -->
+                <div class="card-glow-bar"></div>
+                
+                <div class="card-main">
+                  <div class="card-top">
+                    <span class="card-idx">#{String(articles.length - idx).padStart(2, '0')}</span>
+                    <span class="card-date">
+                      {post.data.publishedAt.toLocaleString('zh-CN', {
+                        year: 'numeric',
+                        month: 'numeric',
+                        day: 'numeric',
+                        hour: '2-digit',
+                        minute: '2-digit',
+                        timeZone: 'Asia/Shanghai',
+                      })}
+                    </span>
+                    <div class="card-tags">
+                      {post.data.tags.map((tag) => (
+                        <span class="card-tag">#{tag}</span>
+                      ))}
+                    </div>
+                  </div>
+                  
+                  <h3 class="card-title">{post.data.title}</h3>
+                  <p class="card-desc">{post.data.description}</p>
+                </div>
+
+                <div class="card-foot">
+                  <span class="card-more">阅读文章</span>
+                  <span class="card-arrow">→</span>
+                </div>
+              </a>
+            );
+          })
         }
         {
           articles.length === 0 && (
@@ -68,6 +97,18 @@ const articles = (await getCollection('articles'))
           )
         }
       </div>
+
+      {
+        hasMore && (
+          <div class="articles-toggle-wrap">
+            <button class="toggle-btn" id="toggleArticlesBtn" aria-expanded="false">
+              <span class="toggle-icon">🐾</span>
+              <span class="toggle-text" id="toggleBtnText">展开其余 {articles.length - initialCount} 篇</span>
+              <span class="toggle-arrow" id="toggleBtnArrow">↓</span>
+            </button>
+          </div>
+        )
+      }
     </div>
   </section>
 
@@ -196,7 +237,6 @@ const articles = (await getCollection('articles'))
       max-width: 580px;
       margin-bottom: 28px;
     }
-    /* 此地无银三百两的诱饵链接 */
     .secret-link {
       color: var(--cat-300);
       text-decoration: underline;
@@ -217,14 +257,14 @@ const articles = (await getCollection('articles'))
       max-width: 580px;
       width: 100%;
       margin: 8px auto 0;
-      padding: 10px 18px 10px 18px;
+      padding: 10px 18px;
       border-left: 3px solid var(--cat-400);
-      background: rgba(18, 21, 42, 0.4);
+      background: rgba(16, 20, 39, 0.45);
       backdrop-filter: blur(10px);
       border-radius: 0 var(--r-sm) var(--r-sm) 0;
-      border-top: 1px solid rgba(238, 241, 250, 0.04);
-      border-right: 1px solid rgba(238, 241, 250, 0.04);
-      border-bottom: 1px solid rgba(238, 241, 250, 0.04);
+      border-top: 1px solid rgba(238, 241, 250, 0.05);
+      border-right: 1px solid rgba(238, 241, 250, 0.05);
+      border-bottom: 1px solid rgba(238, 241, 250, 0.05);
       display: flex;
       align-items: baseline;
       justify-content: space-between;
@@ -235,7 +275,6 @@ const articles = (await getCollection('articles'))
       font-family: var(--font-serif);
       font-size: 0.95rem;
       line-height: 1.65;
-      /* 渐变：翠绿（眼睛色）→ 肉粉（肉垫色） */
       background: linear-gradient(100deg, var(--cat-400) 0%, var(--cat-300) 45%, var(--pad-300) 100%);
       -webkit-background-clip: text;
       background-clip: text;
@@ -260,8 +299,10 @@ const articles = (await getCollection('articles'))
       50% { opacity: 1; }
     }
 
-    /* 文章列表 */
-    .articles { padding: 44px 0 24px; }
+    /* ─────────────────────────────────────────────
+       文章列表与卡片重构
+       ───────────────────────────────────────────── */
+    .articles { padding: 48px 0 24px; }
     .sec-header {
       display: flex;
       align-items: baseline;
@@ -276,13 +317,23 @@ const articles = (await getCollection('articles'))
       gap: 10px;
     }
     .sec-count {
-      color: var(--text-low);
+      color: var(--cat-400);
       font-size: 0.88rem;
       font-family: var(--font-cute);
+      background: rgba(45, 212, 167, 0.1);
+      padding: 2px 10px;
+      border-radius: 999px;
+      border: 1px solid rgba(45, 212, 167, 0.2);
     }
     .paw-mark { color: var(--cat-400); }
-    .sec-desc { color: var(--text-low); font-size: 0.9rem; margin: 6px 0 24px; }
-    .article-list { display: flex; flex-direction: column; gap: 20px; }
+    .sec-desc { color: var(--text-low); font-size: 0.9rem; margin: 6px 0 26px; }
+    
+    .article-list {
+      display: flex;
+      flex-direction: column;
+      gap: 18px;
+    }
+
     .article-card {
       display: block;
       padding: 24px 28px;
@@ -290,56 +341,116 @@ const articles = (await getCollection('articles'))
       color: var(--text-hi);
       position: relative;
       overflow: hidden;
+      border-radius: var(--r-md);
+      transition: all 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
     }
-    /* 卡片顶部极细高光 */
-    .article-card::before {
-      content: "";
+
+    /* 默认折叠项动画过渡 */
+    .article-card.card-collapsed {
+      display: none;
+      opacity: 0;
+      transform: translateY(10px);
+    }
+    .article-card.card-show {
+      display: block;
+      animation: cardFadeIn 0.35s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+    }
+
+    @keyframes cardFadeIn {
+      from {
+        opacity: 0;
+        transform: translateY(12px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    /* 顶部流光色条 */
+    .card-glow-bar {
       position: absolute;
       top: 0;
-      left: 10%;
-      right: 10%;
-      height: 1px;
-      background: linear-gradient(90deg, transparent, rgba(74, 227, 189, 0.4), transparent);
-      opacity: 0;
-      transition: opacity 0.3s ease;
+      left: 0;
+      right: 0;
+      height: 2px;
+      background: linear-gradient(90deg, transparent, var(--cat-400), var(--pad-300), transparent);
+      opacity: 0.35;
+      transition: opacity 0.3s ease, height 0.3s ease;
     }
+
     .article-card:hover {
-      border-color: rgba(45, 212, 167, 0.4);
-      box-shadow: 0 24px 64px -16px rgba(0, 0, 0, 0.8), 0 0 36px -10px var(--cat-glow);
+      border-color: rgba(45, 212, 167, 0.45);
+      box-shadow:
+        0 24px 64px -16px rgba(0, 0, 0, 0.85),
+        0 0 36px -8px var(--cat-glow),
+        inset 0 0 20px rgba(45, 212, 167, 0.04);
       transform: translateY(-4px);
     }
-    .article-card:hover::before {
-      opacity: 1;
+    .article-card:hover .card-glow-bar {
+      opacity: 0.9;
+      height: 3px;
     }
-    .card-top { display: flex; align-items: center; gap: 8px; margin-bottom: 12px; flex-wrap: wrap; }
-    .card-date { color: var(--text-low); font-size: 0.82rem; }
+
+    .card-top {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 12px;
+      flex-wrap: wrap;
+    }
+    .card-idx {
+      font-family: var(--font-cute);
+      font-size: 0.78rem;
+      color: var(--cat-400);
+      font-weight: 700;
+      opacity: 0.8;
+    }
+    .card-date {
+      color: var(--text-low);
+      font-size: 0.82rem;
+    }
+    .card-tags {
+      display: flex;
+      gap: 6px;
+      flex-wrap: wrap;
+    }
     .card-tag {
       font-size: 0.75rem;
       font-family: var(--font-cute);
       color: var(--cat-300);
       background: rgba(45, 212, 167, 0.10);
-      padding: 2px 10px;
+      padding: 2px 9px;
       border-radius: 999px;
       border: 1px solid rgba(45, 212, 167, 0.22);
       white-space: nowrap;
       transition: background 0.2s;
     }
     .article-card:hover .card-tag {
-      background: rgba(45, 212, 167, 0.16);
-      border-color: rgba(45, 212, 167, 0.4);
+      background: rgba(45, 212, 167, 0.18);
+      border-color: rgba(45, 212, 167, 0.45);
     }
+
     .card-title {
       font-family: var(--font-cute);
-      font-size: 1.38rem;
+      font-size: 1.36rem;
       font-weight: 700;
       margin-bottom: 8px;
       color: var(--text-hi);
+      line-height: 1.4;
       transition: color 0.2s ease;
     }
     .article-card:hover .card-title {
       color: var(--cat-300);
     }
-    .card-desc { color: var(--text-mid); font-size: 0.94rem; margin-bottom: 16px; line-height: 1.7; }
+
+    .card-desc {
+      color: var(--text-mid);
+      font-size: 0.93rem;
+      margin-bottom: 16px;
+      line-height: 1.7;
+    }
+
     .card-foot {
       display: flex;
       align-items: center;
@@ -353,10 +464,49 @@ const articles = (await getCollection('articles'))
       display: inline-block;
     }
     .article-card:hover .card-arrow {
-      transform: translateX(5px);
+      transform: translateX(6px);
       color: var(--cat-300);
     }
-    .empty { color: var(--text-low); padding: 20px 0; }
+
+    /* 折叠与展开按钮 */
+    .articles-toggle-wrap {
+      margin-top: 24px;
+      display: flex;
+      justify-content: center;
+    }
+    .toggle-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 10px 24px;
+      background: rgba(16, 20, 39, 0.7);
+      backdrop-filter: blur(12px);
+      border: 1px solid rgba(45, 212, 167, 0.3);
+      border-radius: 999px;
+      color: var(--text-hi);
+      font-family: var(--font-cute);
+      font-size: 0.92rem;
+      cursor: pointer;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+      transition: all 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+    .toggle-btn:hover {
+      background: rgba(24, 30, 58, 0.85);
+      border-color: var(--cat-400);
+      color: var(--cat-300);
+      transform: translateY(-2px);
+      box-shadow: 0 8px 24px -4px var(--cat-glow);
+    }
+    .toggle-icon {
+      font-size: 1rem;
+    }
+    .toggle-arrow {
+      display: inline-block;
+      transition: transform 0.3s ease;
+    }
+    .toggle-btn.expanded .toggle-arrow {
+      transform: rotate(180deg);
+    }
 
     /* 日记入口卡片 */
     .diary-cta { padding: 12px 0 54px; }
@@ -372,7 +522,7 @@ const articles = (await getCollection('articles'))
       overflow: hidden;
     }
     .diary-cta-card:hover {
-      border-color: rgba(255, 143, 171, 0.4);
+      border-color: rgba(255, 143, 171, 0.45);
       box-shadow: 0 20px 60px -18px rgba(0, 0, 0, 0.8), 0 0 36px -12px var(--pad-glow);
       transform: translateY(-3px);
     }
@@ -454,6 +604,38 @@ const articles = (await getCollection('articles'))
           meowIdx++;
         }
         if (fromEl) fromEl.textContent = '—— 死猫的即时反应';
+      });
+    }
+
+    // 文章折叠与展开逻辑
+    const toggleBtn = document.getElementById('toggleArticlesBtn');
+    const toggleBtnText = document.getElementById('toggleBtnText');
+    const toggleBtnArrow = document.getElementById('toggleBtnArrow');
+    const hiddenCards = document.querySelectorAll('[data-article-item="hidden"]');
+
+    if (toggleBtn && hiddenCards.length > 0) {
+      let isExpanded = false;
+      const totalHidden = hiddenCards.length;
+
+      toggleBtn.addEventListener('click', () => {
+        isExpanded = !isExpanded;
+        toggleBtn.classList.toggle('expanded', isExpanded);
+        toggleBtn.setAttribute('aria-expanded', String(isExpanded));
+
+        hiddenCards.forEach((card, i) => {
+          if (isExpanded) {
+            card.classList.remove('card-collapsed');
+            card.classList.add('card-show');
+            (card as HTMLElement).style.animationDelay = `${i * 0.05}s`;
+          } else {
+            card.classList.remove('card-show');
+            card.classList.add('card-collapsed');
+          }
+        });
+
+        if (toggleBtnText) {
+          toggleBtnText.textContent = isExpanded ? '收起多余文章' : `展开其余 ${totalHidden} 篇`;
+        }
       });
     }
   </script>
