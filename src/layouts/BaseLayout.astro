@@ -22,6 +22,8 @@ const mailtoUrl = `mailto:deadcat@dcat.sanyyao.com?subject=${mailSubject}&body=$
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
     <meta name="description" content={description} />
     <meta name="theme-color" content="#060810" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
     <meta property="og:title" content={`${title} · ${siteTitle}`} />
     <meta property="og:description" content={description} />
     <meta property="og:type" content="website" />
@@ -46,7 +48,7 @@ const mailtoUrl = `mailto:deadcat@dcat.sanyyao.com?subject=${mailSubject}&body=$
       </defs>
     </svg>
 
-    <!-- 极光背景 + Canvas 动态夜空星海 -->
+    <!-- 极光背景 + Canvas 动态夜空星海（视口安全区全面顶格覆盖） -->
     <div class={`aurora-bg ${warm ? 'aurora-warm' : ''}`} aria-hidden="true"></div>
     <canvas id="starCanvas" class="star-canvas" aria-hidden="true"></canvas>
 
@@ -58,7 +60,7 @@ const mailtoUrl = `mailto:deadcat@dcat.sanyyao.com?subject=${mailSubject}&body=$
     <!-- 离顶悬浮智能弹出/隐藏 Apple Liquid Glass 独立多胶囊导航栏 -->
     <div class="floating-nav-container" id="floatingNav">
       <div class="wrap nav-wrap-inner">
-        <!-- 胶囊1：品牌独立液体玻璃晶体（点击回首页 + 软果冻触感） -->
+        <!-- 胶囊1：品牌独立半透厚润液体玻璃晶体（点击回首页 + 软果冻触感） -->
         <a href="/" class="liquid-capsule brand-capsule pudding-touch" title="返回首页">
           <div class="glass-shine"></div>
           <span class="brand-paw">🐾</span>
@@ -125,7 +127,7 @@ const mailtoUrl = `mailto:deadcat@dcat.sanyyao.com?subject=${mailSubject}&body=$
       </div>
     </footer>
 
-    <!-- 全局脚本：滚动进度条、智能弹出/隐藏导航、Canvas 星空 -->
+    <!-- 全局脚本：滚动进度条、大幅放慢优雅弹出/隐藏导航、Canvas 星空 -->
     <script>
       const scrollBar = document.getElementById('catScrollBar');
       const navEl = document.getElementById('floatingNav');
@@ -142,11 +144,11 @@ const mailtoUrl = `mailto:deadcat@dcat.sanyyao.com?subject=${mailSubject}&body=$
           scrollBar.style.width = pct + '%';
         }
 
-        // 智能悬浮胶囊显示/隐藏
+        // 智能悬浮胶囊：增加防抖滞后阈值（需持续滚动18px以上），避免灵敏乱跳
         if (navEl) {
-          if (currentY > 70 && currentY > lastScrollY + 6) {
+          if (currentY > 100 && currentY > lastScrollY + 18) {
             navEl.classList.add('nav-hidden');
-          } else if (currentY < lastScrollY - 6 || currentY <= 30) {
+          } else if (currentY < lastScrollY - 14 || currentY <= 30) {
             navEl.classList.remove('nav-hidden');
           }
         }
@@ -308,22 +310,22 @@ const mailtoUrl = `mailto:deadcat@dcat.sanyyao.com?subject=${mailSubject}&body=$
 
       /* ─────────────────────────────────────────────
          离顶悬浮 Apple Liquid Glass 独立多胶囊体系
-         慢速从容丝滑动画 (0.65s 极柔和弹性曲线)
+         慢速从容丝滑动画 (0.85s 极柔和物理弹簧)
          ───────────────────────────────────────────── */
       .floating-nav-container {
         position: sticky;
-        top: 16px;
+        top: calc(14px + env(safe-area-inset-top, 0px));
         z-index: 50;
         width: 100%;
         pointer-events: none;
-        transition: transform 0.65s cubic-bezier(0.16, 1, 0.3, 1),
-                    opacity 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+        transition: transform 0.85s cubic-bezier(0.16, 1, 0.3, 1),
+                    opacity 0.65s cubic-bezier(0.16, 1, 0.3, 1);
         will-change: transform, opacity;
       }
 
       /* 智能向下滚动时：明显向上柔和弹出屏幕外 */
       .floating-nav-container.nav-hidden {
-        transform: translateY(-110px) scale(0.92);
+        transform: translateY(-120px) scale(0.9);
         opacity: 0;
       }
 
@@ -334,7 +336,7 @@ const mailtoUrl = `mailto:deadcat@dcat.sanyyao.com?subject=${mailSubject}&body=$
         gap: 12px;
       }
 
-      /* 核心 Liquid Glass 独立胶囊材质 */
+      /* 核心 Liquid Glass 独立胶囊材质（半透厚润版） */
       .liquid-capsule {
         pointer-events: auto;
         position: relative;
@@ -344,7 +346,7 @@ const mailtoUrl = `mailto:deadcat@dcat.sanyyao.com?subject=${mailSubject}&body=$
         text-decoration: none;
         border-radius: 999px;
         background: transparent;
-        box-shadow: 0 14px 32px -8px rgba(0, 0, 0, 0.65);
+        box-shadow: 0 16px 36px -8px rgba(0, 0, 0, 0.7);
         transition: transform 0.35s cubic-bezier(0.2, 0.8, 0.2, 1),
                     box-shadow 0.35s ease;
       }
@@ -361,16 +363,16 @@ const mailtoUrl = `mailto:deadcat@dcat.sanyyao.com?subject=${mailSubject}&body=$
         pointer-events: none;
       }
 
-      /* 第 2 层：通透晶体层 */
+      /* 第 2 层：半透厚润晶体层（0.72 不透明度，通透且不发虚） */
       .liquid-capsule::after {
         content: "";
         position: absolute;
         inset: 0;
         border-radius: inherit;
         z-index: -2;
-        background: rgba(22, 28, 56, 0.24);
-        backdrop-filter: blur(8px) saturate(190%) brightness(1.08);
-        -webkit-backdrop-filter: blur(8px) saturate(190%) brightness(1.08);
+        background: linear-gradient(135deg, rgba(22, 28, 56, 0.75), rgba(13, 17, 36, 0.65));
+        backdrop-filter: blur(16px) saturate(190%) brightness(1.08);
+        -webkit-backdrop-filter: blur(16px) saturate(190%) brightness(1.08);
         pointer-events: none;
       }
 
@@ -384,7 +386,7 @@ const mailtoUrl = `mailto:deadcat@dcat.sanyyao.com?subject=${mailSubject}&body=$
         box-shadow:
           inset 0 1px 0 rgba(255, 255, 255, 0.45),
           inset 0 -1px 0 rgba(0, 0, 0, 0.3),
-          inset 0 0 10px rgba(255, 255, 255, 0.04);
+          inset 0 0 12px rgba(255, 255, 255, 0.04);
         border: 1px solid rgba(255, 255, 255, 0.1);
         transition: all 0.3s ease;
       }
