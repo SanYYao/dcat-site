@@ -171,8 +171,8 @@ body {
 }
 
 /* ─────────────────────────────────────────────
-   恢复：上一版超舒服的低阻尼果冻布丁触感 (softPuddingJelly)
-   轻柔拉伸、低阻尼回荡、微小形变
+   果冻动画：改由 JS 物理弹簧驱动（rAF 自适应帧率，见 BaseLayout / index）
+   CSS 仅保留 .btn 的按压动画（无 backdrop-filter，transform 动画足够流畅）
    ───────────────────────────────────────────── */
 @keyframes softPuddingJelly {
   0% { transform: scale(1, 1); }
@@ -184,10 +184,7 @@ body {
   100% { transform: scale(1, 1); }
 }
 
-.jelly-active,
-.pudding-touch:active {
-  animation: softPuddingJelly 0.75s cubic-bezier(0.25, 1.35, 0.45, 1) forwards !important;
-}
+/* 注意：.pudding-touch 已由 JS 弹簧接管，此处不再挂 CSS 动画 */
 
 .grad-text {
   background: linear-gradient(100deg, var(--cat-300) 0%, var(--cat-400) 40%, var(--pad-300) 100%);
