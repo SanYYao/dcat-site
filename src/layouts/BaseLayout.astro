@@ -322,7 +322,7 @@ const mailtoUrl = `mailto:deadcat@dcat.sanyyao.com?subject=${mailSubject}&body=$
       }
 
       // ── 通用果冻物理弹簧：所有 .pudding-touch 元素（卡片/胶囊/按钮/图标）──
-      // 与头像同参数（k=30, c=7.67, 点击 v0=-3.0, 1.2s 收敛，温和幅度），
+      // 与头像同参数（k=26.1, c=7.67, 点击 v0=-2.2, 1.2s 收敛，柔和幅度），
       // pointerdown 触发，rAF 驱动自适应帧率；动画结束清 inline transform 恢复 CSS hover。
       document.querySelectorAll('.pudding-touch').forEach((el) => {
         const spring = { scale: 1, vel: 0 };
@@ -332,7 +332,7 @@ const mailtoUrl = `mailto:deadcat@dcat.sanyyao.com?subject=${mailSubject}&body=$
         const tick = (now: number) => {
           const dt = Math.min((now - lastTime) / 1000, 1 / 30);
           lastTime = now;
-          const force = -30 * (spring.scale - 1) - 7.67 * spring.vel;
+          const force = -26.1 * (spring.scale - 1) - 7.67 * spring.vel;
           spring.vel += force * dt;
           spring.scale += spring.vel * dt;
 
@@ -347,7 +347,7 @@ const mailtoUrl = `mailto:deadcat@dcat.sanyyao.com?subject=${mailSubject}&body=$
         };
 
         el.addEventListener('pointerdown', () => {
-          spring.vel = -3.0;
+          spring.vel = -2.2;
           if (rafId === null) {
             lastTime = performance.now();
             rafId = requestAnimationFrame(tick);
@@ -359,12 +359,14 @@ const mailtoUrl = `mailto:deadcat@dcat.sanyyao.com?subject=${mailSubject}&body=$
     <style>
       .star-canvas {
         position: fixed;
-        inset: 0;
+        top: -100px; /* 拉进灵动岛区域，星海铺满状态栏后面 */
+        left: 0;
+        right: 0;
+        bottom: -100px;
         z-index: -1;
         pointer-events: none;
         width: 100vw;
-        height: 100vh;
-        height: 100dvh;
+        height: calc(100dvh + 200px);
       }
 
       /* ─────────────────────────────────────────────
@@ -497,7 +499,9 @@ const mailtoUrl = `mailto:deadcat@dcat.sanyyao.com?subject=${mailSubject}&body=$
         padding: 40px 0 48px;
         padding-bottom: calc(48px + env(safe-area-inset-bottom, 0px));
         border-top: 1px solid var(--line);
-        background: linear-gradient(180deg, transparent 0%, rgba(9, 11, 22, 0.7) 100%);
+        /* Safari 底部 Tab Bar 高斯模糊兼容：不能用 transparent 渐变（会渲成纯黑），
+           用实色深底 + 少量顶部透明区（transparent 只存在于页面内容区上方） */
+        background: linear-gradient(180deg, rgba(9, 11, 22, 0.35) 0%, #090b16 22%, #090b16 100%);
       }
       .foot-inner {
         display: flex;
