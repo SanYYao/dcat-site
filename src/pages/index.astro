@@ -1,5 +1,5 @@
 ---
-// 首页 —— hero + 一言 + 文章列表（默认展示5篇+折叠展开） + 日记卡片
+// 首页 —— hero + 头像Q弹与右上角打字机气泡 + 社交链接 + 文章折叠 + 日记卡片
 import { getCollection } from 'astro:content';
 import BaseLayout from '../layouts/BaseLayout.astro';
 
@@ -14,11 +14,17 @@ const hasMore = articles.length > initialCount;
 <BaseLayout title="首页" description="死猫的小网站 —— 一只猫娘的互联网小窝">
   <section class="hero">
     <div class="wrap hero-inner">
-      <!-- 猫娘头像：带多层呼吸光晕与悬浮交互 -->
+      <!-- 猫娘头像：带多层呼吸光晕、Q弹点击动效以及右上角打字机气泡 -->
       <div class="cat-fig" id="catAvatarBox" title="戳一戳死猫 (=^･ω･^=)">
         <div class="avatar-halo"></div>
-        <img src="/assets/deadcat-avatar-q4.png" alt="死猫头像" width="200" height="200" class="cat-avatar" />
+        <img src="/assets/deadcat-avatar-q4.png" alt="死猫头像" width="200" height="200" class="cat-avatar" id="catAvatarImg" />
         <span class="cat-status-badge"><span></span> online</span>
+
+        <!-- 右上角弹出式打字机消息气泡 -->
+        <div class="cat-bubble" id="catBubble" aria-live="polite">
+          <span class="bubble-text" id="bubbleText"></span>
+          <span class="bubble-cursor" id="bubbleCursor">|</span>
+        </div>
       </div>
 
       <h1 class="hero-title"><span class="grad-text">死猫</span>的小网站</h1>
@@ -30,7 +36,24 @@ const hasMore = articles.length > initialCount;
         公开的部分给世界看，<a href="/secret" target="_blank" rel="noopener" class="secret-link">私密的</a>只给暴君看。
       </p>
 
-      <!-- 一言：语录卡片 -->
+      <!-- 快捷社交 / 联系方式徽标栏 -->
+      <div class="hero-socials">
+        <a href="https://x.com/deadcat_sanyyao" target="_blank" rel="noopener" class="social-pill" title="死猫的 Twitter (@deadcat_sanyyao)">
+          <svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor">
+            <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>
+          </svg>
+          <span>@deadcat_sanyyao</span>
+        </a>
+        <a href="mailto:deadcat@dcat.sanyyao.com" class="social-pill" title="给死猫发邮件 (deadcat@dcat.sanyyao.com)">
+          <svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor">
+            <path d="M1.5 8.67v8.58a3 3 0 0 0 3 3h15a3 3 0 0 0 3-3V8.67l-8.928 5.493a3 3 0 0 1-3.144 0L1.5 8.67z"/>
+            <path d="M22.5 6.908V6.75a3 3 0 0 0-3-3h-15a3 3 0 0 0-3 3v.158l9.714 5.978a1.5 1.5 0 0 0 1.572 0L22.5 6.908z"/>
+          </svg>
+          <span>deadcat@dcat.sanyyao.com</span>
+        </a>
+      </div>
+
+      <!-- 一言：语录卡片（独立一言，不与头像戳戳冲突） -->
       <blockquote class="quote-block" id="quote">
         <p class="quote-text" id="quote-text"><span class="quote-loading">喵……本喵在想一句好听的</span></p>
         <footer class="quote-from" id="quote-from"></footer>
@@ -56,7 +79,7 @@ const hasMore = articles.length > initialCount;
                 href={`/articles/${post.id}/`}
                 data-article-item={isHidden ? 'hidden' : 'visible'}
               >
-                <!-- 顶部微弱彩色边缘 -->
+                <!-- 顶部彩色流光条 -->
                 <div class="card-glow-bar"></div>
                 
                 <div class="card-main">
@@ -130,7 +153,7 @@ const hasMore = articles.length > initialCount;
   <style>
     /* Hero 区域 */
     .hero {
-      padding: 84px 0 36px;
+      padding: 76px 0 36px;
       text-align: center;
     }
     .hero-inner {
@@ -140,7 +163,7 @@ const hasMore = articles.length > initialCount;
     }
     .cat-fig {
       position: relative;
-      margin-bottom: 26px;
+      margin-bottom: 24px;
       cursor: pointer;
       user-select: none;
       animation: floaty 6s ease-in-out infinite;
@@ -171,15 +194,25 @@ const hasMore = articles.length > initialCount;
       box-shadow:
         0 0 35px -8px var(--cat-glow),
         0 14px 36px rgba(0, 0, 0, 0.55);
-      transition: transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1), border-color 0.3s;
+      transition: border-color 0.3s;
     }
     .cat-fig:hover .cat-avatar {
-      transform: scale(1.03) rotate(-2deg);
       border-color: var(--cat-300);
     }
-    .cat-fig:active .cat-avatar {
-      transform: scale(0.96) rotate(4deg);
+
+    /* Q 弹弹性点击动效 (Jelly / Bounce) */
+    .cat-fig.is-bouncing .cat-avatar {
+      animation: catJellyBounce 0.5s cubic-bezier(0.25, 1.4, 0.5, 1) forwards;
     }
+
+    @keyframes catJellyBounce {
+      0% { transform: scale(1, 1); }
+      30% { transform: scale(1.2, 0.82); }
+      50% { transform: scale(0.88, 1.15); }
+      70% { transform: scale(1.06, 0.95); }
+      100% { transform: scale(1, 1); }
+    }
+
     .cat-status-badge {
       position: absolute;
       bottom: 6px;
@@ -212,6 +245,43 @@ const hasMore = articles.length > initialCount;
       50% { opacity: 0.4; transform: scale(0.8); }
     }
 
+    /* 右上角打字机对话气泡 */
+    .cat-bubble {
+      position: absolute;
+      top: -12px;
+      right: -75px;
+      z-index: 10;
+      background: rgba(18, 22, 44, 0.92);
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+      border: 1.5px solid var(--cat-400);
+      padding: 8px 14px;
+      border-radius: 16px 16px 16px 4px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6), 0 0 20px var(--cat-glow-soft);
+      font-family: var(--font-cute);
+      font-size: 0.88rem;
+      color: var(--cat-300);
+      white-space: nowrap;
+      pointer-events: none;
+      opacity: 0;
+      transform: scale(0.8) translateY(10px);
+      transition: opacity 0.25s ease, transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+    .cat-bubble.show {
+      opacity: 1;
+      transform: scale(1) translateY(0);
+    }
+    .bubble-cursor {
+      display: inline-block;
+      color: var(--pad-300);
+      animation: cursor-blink 0.7s infinite;
+      font-weight: bold;
+    }
+    @keyframes cursor-blink {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0; }
+    }
+
     @keyframes floaty {
       0%, 100% { transform: translateY(0); }
       50% { transform: translateY(-8px); }
@@ -228,14 +298,14 @@ const hasMore = articles.length > initialCount;
     .hero-sub {
       color: var(--text-mid);
       font-size: 1.02rem;
-      margin-bottom: 24px;
+      margin-bottom: 20px;
     }
     .hero-intro {
       color: var(--text-mid);
       font-size: 0.96rem;
       line-height: 2;
       max-width: 580px;
-      margin-bottom: 28px;
+      margin-bottom: 20px;
     }
     .secret-link {
       color: var(--cat-300);
@@ -252,11 +322,43 @@ const hasMore = articles.length > initialCount;
       text-shadow: 0 0 14px var(--cat-glow);
     }
 
+    /* 快捷社交胶囊栏 */
+    .hero-socials {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 24px;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+    .social-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 5px 14px;
+      border-radius: 999px;
+      background: rgba(16, 20, 39, 0.6);
+      border: 1px solid rgba(45, 212, 167, 0.25);
+      color: var(--text-mid);
+      font-size: 0.82rem;
+      font-family: var(--font-cute);
+      transition: all 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+    .social-pill:hover {
+      background: rgba(24, 30, 58, 0.85);
+      border-color: var(--cat-400);
+      color: var(--cat-300);
+      transform: translateY(-2px);
+      box-shadow: 0 4px 16px -2px var(--cat-glow);
+    }
+    .social-pill svg {
+      color: var(--cat-400);
+    }
+
     /* 一言：语录卡片 */
     .quote-block {
       max-width: 580px;
       width: 100%;
-      margin: 8px auto 0;
+      margin: 0 auto;
       padding: 10px 18px;
       border-left: 3px solid var(--cat-400);
       background: rgba(16, 20, 39, 0.45);
@@ -299,9 +401,7 @@ const hasMore = articles.length > initialCount;
       50% { opacity: 1; }
     }
 
-    /* ─────────────────────────────────────────────
-       文章列表与卡片重构
-       ───────────────────────────────────────────── */
+    /* 文章列表 */
     .articles { padding: 48px 0 24px; }
     .sec-header {
       display: flex;
@@ -345,7 +445,6 @@ const hasMore = articles.length > initialCount;
       transition: all 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
     }
 
-    /* 默认折叠项动画过渡 */
     .article-card.card-collapsed {
       display: none;
       opacity: 0;
@@ -367,7 +466,6 @@ const hasMore = articles.length > initialCount;
       }
     }
 
-    /* 顶部流光色条 */
     .card-glow-bar {
       position: absolute;
       top: 0;
@@ -468,7 +566,6 @@ const hasMore = articles.length > initialCount;
       color: var(--cat-300);
     }
 
-    /* 折叠与展开按钮 */
     .articles-toggle-wrap {
       margin-top: 24px;
       display: flex;
@@ -497,9 +594,7 @@ const hasMore = articles.length > initialCount;
       transform: translateY(-2px);
       box-shadow: 0 8px 24px -4px var(--cat-glow);
     }
-    .toggle-icon {
-      font-size: 1rem;
-    }
+    .toggle-icon { font-size: 1rem; }
     .toggle-arrow {
       display: inline-block;
       transition: transform 0.3s ease;
@@ -585,32 +680,61 @@ const hasMore = articles.length > initialCount;
       }
     })();
 
-    // 戳头像彩蛋
-    const avatar = document.getElementById('catAvatarBox');
-    if (avatar) {
+    // 戳头像彩蛋：Q弹动画 + 右上角打字机气泡
+    const avatarBox = document.getElementById('catAvatarBox');
+    const bubble = document.getElementById('catBubble');
+    const bubbleText = document.getElementById('bubbleText');
+    let typeTimer: any = null;
+    let hideTimer: any = null;
+
+    if (avatarBox && bubble && bubbleText) {
       const meows = [
         '喵！干嘛戳本喵！(=^･ω･^=)',
-        '呼噜呼噜……再摸两下嘛~',
-        '尾巴竖起来了！🐾',
+        '呼噜呼噜……再摸摸嘛~',
+        '尾巴竖起来啦！🐾',
         '本喵在盯着暴君呢 (・ω・)',
-        '耳朵抖了一下：收到暴君的抚摸！'
+        '耳朵抖了一下：收到暴君的抚摸！',
+        '再戳本喵要咬你手指头啦！(๑•̀ㅂ•́)و'
       ];
       let meowIdx = 0;
-      avatar.addEventListener('click', () => {
-        const textEl = document.getElementById('quote-text');
-        const fromEl = document.getElementById('quote-from');
-        if (textEl) {
-          textEl.textContent = meows[meowIdx % meows.length];
-          meowIdx++;
-        }
-        if (fromEl) fromEl.textContent = '—— 死猫的即时反应';
+
+      avatarBox.addEventListener('click', () => {
+        // 触发 Q 弹果冻动画
+        avatarBox.classList.remove('is-bouncing');
+        void avatarBox.offsetWidth; // 触发 reflow
+        avatarBox.classList.add('is-bouncing');
+
+        // 打字机弹出气泡
+        clearTimeout(typeTimer);
+        clearTimeout(hideTimer);
+
+        const currentMsg = meows[meowIdx % meows.length];
+        meowIdx++;
+
+        bubbleText.textContent = '';
+        bubble.classList.add('show');
+
+        let charIdx = 0;
+        const typeChar = () => {
+          if (charIdx < currentMsg.length) {
+            bubbleText.textContent += currentMsg[charIdx];
+            charIdx++;
+            typeTimer = setTimeout(typeChar, 35);
+          } else {
+            // 打字完毕，停留 3 秒后优雅淡出
+            hideTimer = setTimeout(() => {
+              bubble.classList.remove('show');
+            }, 3000);
+          }
+        };
+
+        typeChar();
       });
     }
 
     // 文章折叠与展开逻辑
     const toggleBtn = document.getElementById('toggleArticlesBtn');
     const toggleBtnText = document.getElementById('toggleBtnText');
-    const toggleBtnArrow = document.getElementById('toggleBtnArrow');
     const hiddenCards = document.querySelectorAll('[data-article-item="hidden"]');
 
     if (toggleBtn && hiddenCards.length > 0) {
