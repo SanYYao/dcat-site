@@ -639,19 +639,20 @@ const hasMore = articles.length > initialCount;
       ];
       let meowIdx = 0;
 
-      // ── 自适应帧率物理弹簧系统 ──
-      // 每帧用真实时间差积分，60Hz / 120Hz ProMotion 都丝滑一致；
-      // 相比 CSS keyframes（固定关键帧），不掉帧、不卡顿。
+      // ── 自适应帧率物理弹簧系统（高阻尼高力度，1.2s 收敛）──
+      // 推导：欠阻尼弹簧 x(t)=x0·e^(-ζωn·t)·cos(ωd·t)
+      //   要求 1.2s 收敛到 1%  →  ζωn = ln(100)/1.2 ≈ 3.835
+      //   取高阻尼 ζ=0.9       →  ωn = 4.26 rad/s
+      //   k = ωn² = 18.2，c = 2ζωn = 7.67
+      //   初始力度 x0 = -0.25（压扁到 scale 0.75）
+      // 曲线：0s 压到 0.75 → 0.85s 回正 1.0 → 轻微过冲 1.002 → 1.2s 收敛
       const spring = {
-        // 弹簧参数：stiffness 力度 / damping 阻尼 / mass 质量
-        stiffness: 380,   // 高刚度：回弹快、紧致
-        damping: 28,      // 较高阻尼：几乎不过冲，柔和收尾
+        stiffness: 18.2,
+        damping: 7.67,
         mass: 1,
-        // 状态
         scale: 1,
         vel: 0,
         floatY: 0,
-        running: false,
       };
 
       let lastTime = performance.now();
@@ -677,17 +678,15 @@ const hasMore = articles.length > initialCount;
         }
 
         avatarImg.style.transform = `translateY(${spring.floatY.toFixed(2)}px) scale(${spring.scale.toFixed(4)})`;
-        spring.running = true;
         requestAnimationFrame(tick);
       }
 
       requestAnimationFrame(tick);
 
-      // 点击：给弹簧一个冲击力（先压扁再弹回，自带 Squash & Stretch 拉伸感）
+      // 点击：直接压到 0.75（大力度），弹簧按高阻尼 1.2s 归位
       avatarBox.addEventListener('click', () => {
-        // 负速度 = 压缩方向（scale 减小），弹簧回弹时会自然过冲产生拉伸
-        spring.vel = -4.2;
-        spring.scale = Math.min(spring.scale, 1);
+        spring.scale = 0.75;
+        spring.vel = 0;
 
         clearTimeout(typeTimer);
         clearTimeout(hideTimer);
