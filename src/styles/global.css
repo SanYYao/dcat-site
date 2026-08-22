@@ -62,9 +62,7 @@ html {
   scroll-behavior: smooth;
   scrollbar-width: none;
   -ms-overflow-style: none;
-  /* Safari 顶部灵动岛：背景透明，让 fixed 星海直接延伸进状态栏区域，
-      overscroll 露白由 body 的 min-height + 星海垫底兜住 */
-  background: transparent;
+  background-color: #060810;
 }
 
 body {
@@ -83,15 +81,16 @@ body {
 ::-webkit-scrollbar-track { display: none; }
 ::-webkit-scrollbar-thumb { display: none; }
 
-/* 极光背景：绝对顶格固定，负 top 拉进灵动岛/状态栏区域 */
+/* 极光背景：绝对顶格固定，穿透灵动岛安全区 */
 .aurora-bg {
   position: fixed;
-  top: -100px; /* 拉高，让渐变顶到灵动岛后面 */
+  top: 0;
   left: 0;
   right: 0;
-  bottom: -100px; /* 底部也拉高，覆盖 Safari Tab Bar 高斯模糊区域 */
+  bottom: 0;
   width: 100vw;
-  height: calc(100dvh + 200px);
+  height: 100vh;
+  height: 100dvh;
   z-index: -3;
   pointer-events: none;
   background:
