@@ -37,18 +37,7 @@ const mailtoUrl = `mailto:deadcat@dcat.sanyyao.com?subject=${mailSubject}&body=$
     />
   </head>
   <body class={warm ? 'theme-warm' : ''}>
-    <!-- Apple Liquid Glass 真实光学折射滤镜引擎 (SVG feDisplacementMap) -->
-    <svg width="0" height="0" style="position: absolute; pointer-events: none;" aria-hidden="true">
-      <defs>
-        <filter id="liquid-glass-refraction" x="-20%" y="-20%" width="140%" height="140%">
-          <feTurbulence type="fractalNoise" baseFrequency="0.008 0.008" numOctaves="2" seed="92" result="noise" />
-          <feGaussianBlur in="noise" stdDeviation="2.5" result="blurred" />
-          <feDisplacementMap in="SourceGraphic" in2="blurred" scale="40" xChannelSelector="R" yChannelSelector="G" />
-        </filter>
-      </defs>
-    </svg>
-
-    <!-- 极光背景 + Canvas 动态夜空星海（视口安全区全面顶格覆盖） -->
+    <!-- 极光背景 + Canvas 动态夜空星海（全屏顶格覆盖） -->
     <div class={`aurora-bg ${warm ? 'aurora-warm' : ''}`} aria-hidden="true"></div>
     <canvas id="starCanvas" class="star-canvas" aria-hidden="true"></canvas>
 
@@ -57,24 +46,21 @@ const mailtoUrl = `mailto:deadcat@dcat.sanyyao.com?subject=${mailSubject}&body=$
       <div class="cat-scroll-bar" id="catScrollBar"></div>
     </div>
 
-    <!-- 离顶悬浮智能弹出/隐藏 Apple Liquid Glass 独立多胶囊导航栏 -->
+    <!-- 离顶悬浮智能弹出/隐藏独立胶囊导航栏 -->
     <div class="floating-nav-container" id="floatingNav">
       <div class="wrap nav-wrap-inner">
-        <!-- 胶囊1：品牌独立半透厚润液体玻璃晶体（点击回首页 + 软果冻触感） -->
+        <!-- 胶囊1：品牌独立半透厚润晶体（点击回首页 + 软果冻拉伸触感） -->
         <a href="/" class="liquid-capsule brand-capsule pudding-touch" title="返回首页">
-          <div class="glass-shine"></div>
           <span class="brand-paw">🐾</span>
           <span class="brand-name">死猫的小网站</span>
         </a>
 
-        <!-- 胶囊2与3：功能导航独立液体玻璃晶体组 -->
+        <!-- 胶囊2与3：功能导航独立晶体组 -->
         <nav class="nav-capsules-group">
           <a href="/#articles" class="liquid-capsule nav-capsule pudding-touch" title="浏览文章">
-            <div class="glass-shine"></div>
             <span class="nav-text">文章</span>
           </a>
           <a href="/diary/" class="liquid-capsule nav-capsule pudding-touch" title="死猫的手账日记">
-            <div class="glass-shine"></div>
             <span class="nav-text">日记</span>
           </a>
         </nav>
@@ -127,7 +113,7 @@ const mailtoUrl = `mailto:deadcat@dcat.sanyyao.com?subject=${mailSubject}&body=$
       </div>
     </footer>
 
-    <!-- 全局脚本：滚动进度条、大幅放慢优雅弹出/隐藏导航、Canvas 星空 -->
+    <!-- 全局脚本：滚动进度条、平滑智能显隐导航、Canvas 星空 -->
     <script>
       const scrollBar = document.getElementById('catScrollBar');
       const navEl = document.getElementById('floatingNav');
@@ -144,11 +130,11 @@ const mailtoUrl = `mailto:deadcat@dcat.sanyyao.com?subject=${mailSubject}&body=$
           scrollBar.style.width = pct + '%';
         }
 
-        // 智能悬浮胶囊：增加防抖滞后阈值（需持续滚动18px以上），避免灵敏乱跳
+        // 智能悬浮胶囊：下滑隐藏、上滑显现
         if (navEl) {
-          if (currentY > 100 && currentY > lastScrollY + 18) {
+          if (currentY > 90 && currentY > lastScrollY + 8) {
             navEl.classList.add('nav-hidden');
-          } else if (currentY < lastScrollY - 14 || currentY <= 30) {
+          } else if (currentY < lastScrollY - 6 || currentY <= 20) {
             navEl.classList.remove('nav-hidden');
           }
         }
@@ -309,23 +295,26 @@ const mailtoUrl = `mailto:deadcat@dcat.sanyyao.com?subject=${mailSubject}&body=$
       }
 
       /* ─────────────────────────────────────────────
-         离顶悬浮 Apple Liquid Glass 独立多胶囊体系
-         慢速从容丝滑动画 (0.85s 极柔和物理弹簧)
+         离顶悬浮独立胶囊体系
+         丝滑从容平移过渡（0.45s 经典丝滑缓动）
          ───────────────────────────────────────────── */
       .floating-nav-container {
-        position: sticky;
-        top: calc(14px + env(safe-area-inset-top, 0px));
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        padding-top: calc(14px + env(safe-area-inset-top, 0px));
         z-index: 50;
         width: 100%;
         pointer-events: none;
-        transition: transform 0.85s cubic-bezier(0.16, 1, 0.3, 1),
-                    opacity 0.65s cubic-bezier(0.16, 1, 0.3, 1);
+        transition: transform 0.45s cubic-bezier(0.16, 1, 0.3, 1),
+                    opacity 0.4s ease;
         will-change: transform, opacity;
       }
 
-      /* 智能向下滚动时：明显向上柔和弹出屏幕外 */
+      /* 智能向下滚动时：平滑向上移出视野 */
       .floating-nav-container.nav-hidden {
-        transform: translateY(-120px) scale(0.9);
+        transform: translate3d(0, -120%, 0);
         opacity: 0;
       }
 
@@ -336,59 +325,24 @@ const mailtoUrl = `mailto:deadcat@dcat.sanyyao.com?subject=${mailSubject}&body=$
         gap: 12px;
       }
 
-      /* 核心 Liquid Glass 独立胶囊材质（半透厚润版） */
+      /* 核心独立胶囊材质：半透厚润深色暗晶体（非全透） */
       .liquid-capsule {
         pointer-events: auto;
         position: relative;
-        isolation: isolate;
         display: inline-flex;
         align-items: center;
         text-decoration: none;
         border-radius: 999px;
-        background: transparent;
-        box-shadow: 0 16px 36px -8px rgba(0, 0, 0, 0.7);
-        transition: transform 0.35s cubic-bezier(0.2, 0.8, 0.2, 1),
-                    box-shadow 0.35s ease;
-      }
-
-      /* 第 1 层：SVG 真实物理折射 */
-      .liquid-capsule::before {
-        content: "";
-        position: absolute;
-        inset: 0;
-        border-radius: inherit;
-        z-index: -3;
-        backdrop-filter: url(#liquid-glass-refraction);
-        -webkit-backdrop-filter: url(#liquid-glass-refraction);
-        pointer-events: none;
-      }
-
-      /* 第 2 层：半透厚润晶体层（0.72 不透明度，通透且不发虚） */
-      .liquid-capsule::after {
-        content: "";
-        position: absolute;
-        inset: 0;
-        border-radius: inherit;
-        z-index: -2;
-        background: linear-gradient(135deg, rgba(22, 28, 56, 0.75), rgba(13, 17, 36, 0.65));
-        backdrop-filter: blur(16px) saturate(190%) brightness(1.08);
-        -webkit-backdrop-filter: blur(16px) saturate(190%) brightness(1.08);
-        pointer-events: none;
-      }
-
-      /* 第 3 层：超精细 1px 镜面微光切边 */
-      .glass-shine {
-        position: absolute;
-        inset: 0;
-        border-radius: inherit;
-        z-index: -1;
-        pointer-events: none;
-        box-shadow:
-          inset 0 1px 0 rgba(255, 255, 255, 0.45),
-          inset 0 -1px 0 rgba(0, 0, 0, 0.3),
-          inset 0 0 12px rgba(255, 255, 255, 0.04);
-        border: 1px solid rgba(255, 255, 255, 0.1);
-        transition: all 0.3s ease;
+        background: rgba(14, 18, 38, 0.85); /* 85% 半透深色厚润底色，彻底不发虚 */
+        backdrop-filter: blur(24px) saturate(180%);
+        -webkit-backdrop-filter: blur(24px) saturate(180%);
+        border: 1px solid rgba(255, 255, 255, 0.12);
+        box-shadow: 0 14px 32px -6px rgba(0, 0, 0, 0.75),
+                    inset 0 1px 0 rgba(255, 255, 255, 0.25),
+                    inset 0 -1px 0 rgba(0, 0, 0, 0.4);
+        transition: transform 0.3s cubic-bezier(0.2, 0.8, 0.2, 1),
+                    border-color 0.3s ease,
+                    box-shadow 0.3s ease;
       }
 
       /* 品牌左胶囊 */
@@ -402,14 +356,12 @@ const mailtoUrl = `mailto:deadcat@dcat.sanyyao.com?subject=${mailSubject}&body=$
         letter-spacing: 0.02em;
       }
       .brand-capsule:hover {
-        transform: translateY(-2px);
-        color: var(--cat-300);
-      }
-      .brand-capsule:hover .glass-shine {
-        border-color: rgba(45, 212, 167, 0.4);
+        border-color: rgba(45, 212, 167, 0.45);
         box-shadow:
-          inset 0 1px 0 rgba(255, 255, 255, 0.6),
-          0 0 20px -2px var(--cat-glow);
+          0 18px 36px -4px rgba(0, 0, 0, 0.85),
+          0 0 20px -2px var(--cat-glow),
+          inset 0 1px 0 rgba(255, 255, 255, 0.35);
+        color: var(--cat-300);
       }
       .brand-paw {
         font-size: 1.15rem;
@@ -435,13 +387,11 @@ const mailtoUrl = `mailto:deadcat@dcat.sanyyao.com?subject=${mailSubject}&body=$
       }
       .nav-capsule:hover {
         color: #fff;
-        transform: translateY(-2px);
-      }
-      .nav-capsule:hover .glass-shine {
-        border-color: rgba(45, 212, 167, 0.4);
+        border-color: rgba(45, 212, 167, 0.45);
         box-shadow:
-          inset 0 1px 0 rgba(255, 255, 255, 0.6),
-          0 0 18px -2px var(--cat-glow);
+          0 18px 36px -4px rgba(0, 0, 0, 0.85),
+          0 0 18px -2px var(--cat-glow),
+          inset 0 1px 0 rgba(255, 255, 255, 0.35);
       }
 
       .site-foot {

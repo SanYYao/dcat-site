@@ -1,5 +1,5 @@
 /* ─────────────────────────────────────────────
-   死猫的小网站 · Apple Liquid Glass 真实折射与设计 Token
+   死猫的小网站 · 设计 Token & 全局物理动效系统
    深夜夜猫系：墨蓝夜色 × 翡翠猫眼 × 粉肉垫
    ───────────────────────────────────────────── */
 
@@ -62,12 +62,12 @@ html {
   scroll-behavior: smooth;
   scrollbar-width: none;
   -ms-overflow-style: none;
-  background: var(--night-950);
+  background-color: #060810 !important; /* 确保 iOS Safari / 灵动岛顶部安全区绝不露白或发黑 */
 }
 
 body {
   font-family: var(--font-sans);
-  background: transparent;
+  background-color: #060810;
   color: var(--text-hi);
   min-height: 100vh;
   min-height: 100dvh;
@@ -83,14 +83,20 @@ body {
 
 .aurora-bg {
   position: fixed;
-  inset: 0;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  width: 100vw;
+  height: 100vh;
+  height: 100dvh;
   z-index: -3;
   pointer-events: none;
   background:
-    radial-gradient(ellipse 90% 60% at 15% -10%, rgba(45, 212, 167, 0.16), transparent 60%),
-    radial-gradient(ellipse 80% 50% at 90% 110%, rgba(255, 143, 171, 0.13), transparent 60%),
-    radial-gradient(ellipse 65% 65% at 75% 20%, rgba(34, 41, 78, 0.55), transparent 65%),
-    linear-gradient(180deg, #05060d 0%, #080b16 50%, #0d1122 100%);
+    radial-gradient(ellipse 90% 60% at 15% -10%, rgba(45, 212, 167, 0.18), transparent 60%),
+    radial-gradient(ellipse 80% 50% at 90% 110%, rgba(255, 143, 171, 0.14), transparent 60%),
+    radial-gradient(ellipse 65% 65% at 75% 20%, rgba(34, 41, 78, 0.6), transparent 65%),
+    linear-gradient(180deg, #060810 0%, #0a0d18 50%, #0d1122 100%);
   animation: aurora-breath 14s ease-in-out infinite alternate;
 }
 
@@ -119,79 +125,65 @@ body {
 }
 
 /* ─────────────────────────────────────────────
-   真实 Apple Liquid Glass 材质体系（半透厚润晶体版，非全透）
+   卡片玻璃拟态（厚润暗色水晶底色，非全透）
    ───────────────────────────────────────────── */
 
 .glass,
 .liquid-glass-card {
   position: relative;
   isolation: isolate;
-  background: transparent;
+  background: rgba(16, 21, 44, 0.78);
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
   border-radius: var(--r-lg);
-  box-shadow: 0 18px 45px -12px rgba(0, 0, 0, 0.7);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 18px 45px -12px rgba(0, 0, 0, 0.75),
+              inset 0 1px 0 rgba(255, 255, 255, 0.25),
+              inset 0 -1px 0 rgba(0, 0, 0, 0.35);
   transition: transform 0.3s cubic-bezier(0.2, 0.8, 0.2, 1),
-              box-shadow 0.3s ease;
+              box-shadow 0.3s ease,
+              border-color 0.3s ease;
 }
 
-/* 第 1 层：SVG 物理折射层 */
-.glass::before,
-.liquid-glass-card::before {
-  content: "";
-  position: absolute;
-  inset: 0;
-  border-radius: inherit;
-  z-index: -3;
-  backdrop-filter: url(#liquid-glass-refraction);
-  -webkit-backdrop-filter: url(#liquid-glass-refraction);
-  pointer-events: none;
-}
-
-/* 第 2 层：半透厚润暗晶体（0.68 不透明度，不发虚不全透） */
-.glass::after,
-.liquid-glass-card::after {
-  content: "";
-  position: absolute;
-  inset: 0;
-  border-radius: inherit;
-  z-index: -2;
-  background: linear-gradient(135deg, rgba(20, 26, 52, 0.72), rgba(12, 16, 32, 0.62));
-  backdrop-filter: blur(16px) saturate(190%) brightness(1.05);
-  -webkit-backdrop-filter: blur(16px) saturate(190%) brightness(1.05);
-  pointer-events: none;
-}
-
-/* 第 3 层：超精细 1px 丝滑微光 Specular 外壳 */
 .glass-specular-shell {
   position: absolute;
   inset: 0;
   border-radius: inherit;
   z-index: -1;
   pointer-events: none;
-  box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.35),
-    inset 0 -1px 0 rgba(0, 0, 0, 0.3),
-    inset 0 0 16px rgba(255, 255, 255, 0.02);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  transition: all 0.3s ease;
 }
 
 /* ─────────────────────────────────────────────
-   超弹果冻布丁：明显 Squash & Stretch（挤压与拉伸感）动效
-   低阻尼多波段软糯回弹（横向压扁 -> 纵向拉伸 -> 柔和余震归位）
+   核心果冻拉伸动画（Squash & Stretch 物理法则）
+   点击产生明显压扁与纵向拉伸，多波段柔和弹跳
    ───────────────────────────────────────────── */
-@keyframes softPuddingJelly {
-  0% { transform: scale(1, 1); }
-  22% { transform: scale(1.15, 0.82); }   /* 明显横向挤压、纵向扁平 */
-  42% { transform: scale(0.88, 1.14); }   /* 明显纵向拉伸、横向收窄（核心拉伸感） */
-  62% { transform: scale(1.06, 0.94); }   /* 第二波低阻尼回弹 */
-  80% { transform: scale(0.97, 1.03); }   /* 软糯微拉伸余震 */
-  92% { transform: scale(1.015, 0.985); } /* 极柔微颤 */
-  100% { transform: scale(1, 1); }
+@keyframes realJellyStretch {
+  0% {
+    transform: scale3d(1, 1, 1);
+  }
+  20% {
+    transform: scale3d(1.18, 0.78, 1); /* 明显横向压扁、纵向紧缩 */
+  }
+  42% {
+    transform: scale3d(0.85, 1.20, 1); /* 强烈纵向拉长、横向收窄（肉眼可见的核心拉伸感） */
+  }
+  62% {
+    transform: scale3d(1.08, 0.92, 1); /* 第二波弹性回荡 */
+  }
+  80% {
+    transform: scale3d(0.96, 1.04, 1); /* 软糯微拉伸余震 */
+  }
+  92% {
+    transform: scale3d(1.02, 0.98, 1); /* 极细柔和微颤 */
+  }
+  100% {
+    transform: scale3d(1, 1, 1);
+  }
 }
 
 .jelly-active,
 .pudding-touch:active {
-  animation: softPuddingJelly 0.75s cubic-bezier(0.25, 1.35, 0.45, 1) forwards;
+  animation: realJellyStretch 0.75s cubic-bezier(0.28, 1.45, 0.42, 1) forwards !important;
 }
 
 .grad-text {
@@ -216,7 +208,7 @@ body {
   padding: 11px 24px;
   border-radius: var(--r-sm);
   border: 1px solid rgba(45, 212, 167, 0.32);
-  background: linear-gradient(135deg, rgba(45, 212, 167, 0.16), rgba(255, 143, 171, 0.10));
+  background: linear-gradient(135deg, rgba(45, 212, 167, 0.22), rgba(255, 143, 171, 0.14));
   color: var(--text-hi);
   text-decoration: none;
   font-size: 0.95rem;
@@ -237,14 +229,14 @@ body {
   opacity: 0.9;
 }
 .btn:hover {
-  background: linear-gradient(135deg, rgba(45, 212, 167, 0.28), rgba(255, 143, 171, 0.16));
+  background: linear-gradient(135deg, rgba(45, 212, 167, 0.32), rgba(255, 143, 171, 0.2));
   border-color: rgba(45, 212, 167, 0.65);
   box-shadow: 0 0 32px -6px var(--cat-glow), inset 0 0 16px rgba(255, 255, 255, 0.04);
   transform: translateY(-2px);
   color: #fff;
 }
 .btn:active {
-  animation: softPuddingJelly 0.75s cubic-bezier(0.25, 1.35, 0.45, 1) forwards;
+  animation: realJellyStretch 0.75s cubic-bezier(0.28, 1.45, 0.42, 1) forwards;
 }
 
 a { color: var(--cat-400); text-decoration: none; transition: color 0.2s, text-shadow 0.2s; }
