@@ -13,24 +13,24 @@
 
 :root {
   /* 夜色底色系 */
-  --night-950: #05060b;
-  --night-900: #090b16;
-  --night-800: #101427;
-  --night-700: #181d39;
-  --night-600: #242a50;
+  --night-950: #060810;
+  --night-900: #0a0d18;
+  --night-800: #101426;
+  --night-700: #171d36;
+  --night-600: #22294e;
 
   /* 猫眼翡翠绿（主色） */
   --cat-500: #2dd4a7;
   --cat-400: #4ae3bd;
   --cat-300: #7df0d3;
-  --cat-glow: rgba(45, 212, 167, 0.4);
-  --cat-glow-soft: rgba(45, 212, 167, 0.16);
+  --cat-glow: rgba(45, 212, 167, 0.45);
+  --cat-glow-soft: rgba(45, 212, 167, 0.18);
 
   /* 粉肉垫（点缀色） */
   --pad-400: #ff8fab;
   --pad-300: #ffa8c0;
-  --pad-glow: rgba(255, 143, 171, 0.3);
-  --pad-glow-soft: rgba(255, 143, 171, 0.14);
+  --pad-glow: rgba(255, 143, 171, 0.35);
+  --pad-glow-soft: rgba(255, 143, 171, 0.16);
 
   /* 中性与线条 */
   --text-hi: #eef1fa;
@@ -40,7 +40,7 @@
   --line-strong: rgba(238, 241, 250, 0.15);
 
   /* 玻璃卡片（暗色玻璃体系） */
-  --glass-bg: rgba(16, 20, 39, 0.65);
+  --glass-bg: rgba(16, 20, 39, 0.68);
   --glass-blur: blur(20px);
   --glass-border: rgba(238, 241, 250, 0.09);
   --glass-shadow: 0 20px 60px -20px rgba(0, 0, 0, 0.75);
@@ -83,112 +83,102 @@ body {
 ::-webkit-scrollbar-thumb { display: none; }
 
 /* ─────────────────────────────────────────────
-   夜空背景：动态极光星云 + 多层微弱星空 + 划过流星
+   夜空背景：动态极光星云 + 清晰多层闪烁星空 + 划过流星
    ───────────────────────────────────────────── */
 .aurora-bg {
   position: fixed;
   inset: 0;
   z-index: -3;
   background:
-    radial-gradient(ellipse 90% 60% at 15% -10%, rgba(45, 212, 167, 0.18), transparent 60%),
-    radial-gradient(ellipse 80% 50% at 90% 110%, rgba(255, 143, 171, 0.14), transparent 60%),
-    radial-gradient(ellipse 65% 65% at 75% 20%, rgba(36, 42, 80, 0.65), transparent 65%),
-    radial-gradient(circle 400px at 50% 50%, rgba(45, 212, 167, 0.05), transparent 70%),
-    linear-gradient(180deg, var(--night-950) 0%, var(--night-900) 50%, var(--night-800) 100%);
+    radial-gradient(ellipse 90% 60% at 15% -10%, rgba(45, 212, 167, 0.16), transparent 60%),
+    radial-gradient(ellipse 80% 50% at 90% 110%, rgba(255, 143, 171, 0.13), transparent 60%),
+    radial-gradient(ellipse 65% 65% at 75% 20%, rgba(34, 41, 78, 0.55), transparent 65%),
+    linear-gradient(180deg, #05060d 0%, #080b16 50%, #0d1122 100%);
   animation: aurora-breath 14s ease-in-out infinite alternate;
 }
 
 @keyframes aurora-breath {
-  0% {
-    filter: hue-rotate(0deg) brightness(1);
-    transform: scale(1);
-  }
-  50% {
-    filter: hue-rotate(10deg) brightness(1.08);
-    transform: scale(1.03);
-  }
-  100% {
-    filter: hue-rotate(-8deg) brightness(0.95);
-    transform: scale(1);
-  }
+  0% { filter: hue-rotate(0deg) brightness(1); }
+  50% { filter: hue-rotate(10deg) brightness(1.08); }
+  100% { filter: hue-rotate(-8deg) brightness(0.95); }
 }
 
-/* 多层繁星系统 */
+/* 第一层星空：清晰可见的星点分布 */
 .stars {
   position: fixed;
   inset: 0;
   z-index: -2;
   pointer-events: none;
   background-image:
-    /* 细碎远星 (白色) */
-    radial-gradient(1px 1px at 30px 40px, rgba(238, 241, 250, 0.8), transparent),
-    radial-gradient(1px 1px at 110px 150px, rgba(238, 241, 250, 0.5), transparent),
-    radial-gradient(1.5px 1.5px at 190px 70px, rgba(238, 241, 250, 0.65), transparent),
-    radial-gradient(1px 1px at 280px 210px, rgba(238, 241, 250, 0.55), transparent),
-    radial-gradient(1px 1px at 450px 110px, rgba(238, 241, 250, 0.45), transparent),
-    radial-gradient(1.5px 1.5px at 530px 230px, rgba(238, 241, 250, 0.7), transparent),
-    radial-gradient(1px 1px at 670px 80px, rgba(238, 241, 250, 0.5), transparent),
-    radial-gradient(1px 1px at 780px 190px, rgba(238, 241, 250, 0.6), transparent),
-    /* 翡翠绿亮点 */
-    radial-gradient(2px 2px at 90px 260px, rgba(74, 227, 189, 0.85), transparent),
-    radial-gradient(2.5px 2.5px at 340px 90px, rgba(125, 240, 211, 0.9), transparent),
-    radial-gradient(2px 2px at 610px 170px, rgba(74, 227, 189, 0.75), transparent),
+    /* 白色小星与中星 */
+    radial-gradient(1.5px 1.5px at 24px 35px, #ffffff, transparent),
+    radial-gradient(2px 2px at 85px 140px, rgba(255, 255, 255, 0.9), transparent),
+    radial-gradient(1.5px 1.5px at 170px 65px, rgba(255, 255, 255, 0.8), transparent),
+    radial-gradient(2px 2px at 250px 190px, rgba(255, 255, 255, 0.85), transparent),
+    radial-gradient(1.5px 1.5px at 380px 80px, #ffffff, transparent),
+    radial-gradient(2px 2px at 470px 220px, rgba(255, 255, 255, 0.9), transparent),
+    radial-gradient(1.5px 1.5px at 560px 50px, rgba(255, 255, 255, 0.8), transparent),
+    radial-gradient(2px 2px at 680px 160px, rgba(255, 255, 255, 0.85), transparent),
+    /* 翡翠绿亮点（发光小宝石） */
+    radial-gradient(2.5px 2.5px at 120px 240px, #4ae3bd, transparent),
+    radial-gradient(3px 3px at 320px 110px, #7df0d3, transparent),
+    radial-gradient(2.5px 2.5px at 590px 140px, #4ae3bd, transparent),
     /* 粉肉垫亮点 */
-    radial-gradient(2px 2px at 230px 140px, rgba(255, 143, 171, 0.8), transparent),
-    radial-gradient(2.5px 2.5px at 490px 50px, rgba(255, 168, 192, 0.85), transparent),
-    radial-gradient(2px 2px at 720px 280px, rgba(255, 143, 171, 0.75), transparent);
-  background-size: 800px 320px;
-  animation: twinkle 6s ease-in-out infinite alternate;
+    radial-gradient(2.5px 2.5px at 210px 120px, #ff8fab, transparent),
+    radial-gradient(3px 3px at 440px 40px, #ffa8c0, transparent),
+    radial-gradient(2.5px 2.5px at 640px 260px, #ff8fab, transparent);
+  background-size: 720px 300px;
+  animation: twinkle 4s ease-in-out infinite alternate;
 }
 
-/* 第二层交错星光（增加深邃视差感） */
+/* 第二层星空：错落分布，独立呼吸 */
 .stars-layer2 {
   position: fixed;
   inset: 0;
   z-index: -2;
   pointer-events: none;
   background-image:
-    radial-gradient(1px 1px at 60px 100px, rgba(238, 241, 250, 0.5), transparent),
-    radial-gradient(1.5px 1.5px at 150px 220px, rgba(125, 240, 211, 0.6), transparent),
-    radial-gradient(1px 1px at 380px 160px, rgba(238, 241, 250, 0.45), transparent),
-    radial-gradient(2px 2px at 420px 290px, rgba(255, 168, 192, 0.55), transparent),
-    radial-gradient(1px 1px at 580px 40px, rgba(238, 241, 250, 0.6), transparent),
-    radial-gradient(1.5px 1.5px at 750px 130px, rgba(74, 227, 189, 0.5), transparent);
-  background-size: 650px 350px;
-  animation: twinkle-alt 8s ease-in-out infinite alternate;
+    radial-gradient(1.5px 1.5px at 50px 90px, rgba(255, 255, 255, 0.75), transparent),
+    radial-gradient(2px 2px at 140px 180px, rgba(125, 240, 211, 0.9), transparent),
+    radial-gradient(1.5px 1.5px at 290px 45px, rgba(255, 255, 255, 0.8), transparent),
+    radial-gradient(2.5px 2.5px at 360px 250px, rgba(255, 168, 192, 0.85), transparent),
+    radial-gradient(1.5px 1.5px at 510px 160px, rgba(255, 255, 255, 0.75), transparent),
+    radial-gradient(2px 2px at 620px 75px, rgba(74, 227, 189, 0.9), transparent);
+  background-size: 600px 320px;
+  animation: twinkle-alt 6s ease-in-out infinite alternate;
 }
 
 @keyframes twinkle {
-  0% { opacity: 0.45; transform: translateY(0); }
-  50% { opacity: 0.95; }
-  100% { opacity: 0.65; transform: translateY(-4px); }
+  0% { opacity: 0.6; }
+  50% { opacity: 1; }
+  100% { opacity: 0.75; }
 }
 
 @keyframes twinkle-alt {
-  0% { opacity: 0.65; transform: translateY(0) scale(1); }
-  50% { opacity: 0.35; }
-  100% { opacity: 0.85; transform: translateY(-2px) scale(1.02); }
+  0% { opacity: 0.75; }
+  50% { opacity: 0.45; }
+  100% { opacity: 1; }
 }
 
 /* 划过的微弱流星 */
 .shooting-star {
   position: fixed;
-  top: 15%;
-  left: 80%;
-  width: 120px;
-  height: 1.5px;
-  background: linear-gradient(90deg, rgba(125, 240, 211, 0.8), rgba(255, 143, 171, 0.4), transparent);
+  top: 10%;
+  left: 75%;
+  width: 140px;
+  height: 2px;
+  background: linear-gradient(90deg, #7df0d3, #ffa8c0, transparent);
   transform: rotate(-35deg);
   opacity: 0;
   pointer-events: none;
   z-index: -1;
-  animation: shoot 16s ease-in-out infinite;
+  animation: shoot 12s ease-in-out infinite;
 }
 
 @keyframes shoot {
-  0%, 75% { opacity: 0; transform: translate(0, 0) rotate(-35deg); }
-  78% { opacity: 0.85; transform: translate(-140px, 100px) rotate(-35deg); }
-  82% { opacity: 0; transform: translate(-280px, 200px) rotate(-35deg); }
+  0%, 70% { opacity: 0; transform: translate(0, 0) rotate(-35deg); }
+  73% { opacity: 1; transform: translate(-160px, 110px) rotate(-35deg); }
+  77% { opacity: 0; transform: translate(-320px, 220px) rotate(-35deg); }
   100% { opacity: 0; }
 }
 
