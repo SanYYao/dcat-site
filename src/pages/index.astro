@@ -14,8 +14,8 @@ const hasMore = articles.length > initialCount;
 <BaseLayout title="首页" description="死猫的小网站 —— 一只猫娘的互联网小窝">
   <section class="hero">
     <div class="wrap hero-inner">
-      <!-- 猫娘头像：带多层呼吸光晕、极高阻尼微振幅紧致Q弹动效以及右上角打字机气泡 -->
-      <div class="cat-fig" id="catAvatarBox" title="戳一戳死猫 (=^･ω･^=)">
+      <!-- 猫娘头像：极软布丁果冻触感点击动效 + 右上角打字机气泡 -->
+      <div class="cat-fig pudding-touch" id="catAvatarBox" title="戳一戳死猫 (=^･ω･^=)">
         <div class="avatar-halo"></div>
         <img src="/assets/deadcat-avatar-q4.png" alt="死猫头像" width="200" height="200" class="cat-avatar" id="catAvatarImg" />
         <span class="cat-status-badge"><span></span> online</span>
@@ -58,7 +58,7 @@ const hasMore = articles.length > initialCount;
             const isHidden = idx >= initialCount;
             return (
               <a
-                class={`article-card glass ${isHidden ? 'card-collapsed' : ''}`}
+                class={`article-card glass pudding-touch ${isHidden ? 'card-collapsed' : ''}`}
                 href={`/articles/${post.id}/`}
                 data-article-item={isHidden ? 'hidden' : 'visible'}
               >
@@ -109,7 +109,7 @@ const hasMore = articles.length > initialCount;
       {
         hasMore && (
           <div class="articles-toggle-wrap">
-            <button class="toggle-btn" id="toggleArticlesBtn" aria-expanded="false">
+            <button class="toggle-btn pudding-touch" id="toggleArticlesBtn" aria-expanded="false">
               <span class="toggle-icon">🐾</span>
               <span class="toggle-text" id="toggleBtnText">展开其余 {articles.length - initialCount} 篇</span>
               <span class="toggle-arrow" id="toggleBtnArrow">↓</span>
@@ -122,7 +122,7 @@ const hasMore = articles.length > initialCount;
 
   <section class="diary-cta">
     <div class="wrap">
-      <a href="/diary/" class="diary-cta-card glass">
+      <a href="/diary/" class="diary-cta-card glass pudding-touch">
         <div class="glass-specular-shell"></div>
         <div class="diary-cta-icon-box">
           <span class="diary-cta-icon">📖</span>
@@ -176,7 +176,7 @@ const hasMore = articles.length > initialCount;
       height: 190px;
       border-radius: 50%;
       object-fit: cover;
-      border: 2px solid rgba(45, 212, 167, 0.45);
+      border: 1.5px solid rgba(45, 212, 167, 0.45);
       box-shadow:
         0 0 35px -8px var(--cat-glow),
         0 14px 36px rgba(0, 0, 0, 0.55);
@@ -184,19 +184,6 @@ const hasMore = articles.length > initialCount;
     }
     .cat-fig:hover .cat-avatar {
       border-color: var(--cat-300);
-    }
-
-    /* 调校后：极小振幅 3% + 极高阻尼与强回弹 (Tight Damped Spring) */
-    .cat-fig.is-bouncing .cat-avatar {
-      animation: catTightSpring 0.45s cubic-bezier(0.2, 0.9, 0.3, 1.15) forwards;
-    }
-
-    @keyframes catTightSpring {
-      0% { transform: scale(1, 1); }
-      25% { transform: scale(1.035, 0.965); }
-      50% { transform: scale(0.985, 1.015); }
-      75% { transform: scale(1.008, 0.992); }
-      100% { transform: scale(1, 1); }
     }
 
     .cat-status-badge {
@@ -240,7 +227,7 @@ const hasMore = articles.length > initialCount;
       background: rgba(18, 22, 44, 0.92);
       backdrop-filter: blur(14px);
       -webkit-backdrop-filter: blur(14px);
-      border: 1.5px solid var(--cat-400);
+      border: 1.2px solid var(--cat-400);
       padding: 8px 14px;
       border-radius: 16px 16px 16px 4px;
       box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6), 0 0 20px var(--cat-glow-soft);
@@ -432,10 +419,9 @@ const hasMore = articles.length > initialCount;
       transform: translateY(-4px);
     }
     .article-card:hover .glass-specular-shell {
-      border-color: rgba(45, 212, 167, 0.45);
+      border-color: rgba(45, 212, 167, 0.4);
       box-shadow:
-        inset 1.5px 1.5px 1px 0 rgba(255, 255, 255, 0.85),
-        inset -1px -1px 1px 0 rgba(45, 212, 167, 0.4),
+        inset 0 1px 0 rgba(255, 255, 255, 0.65),
         0 24px 64px -16px rgba(0, 0, 0, 0.85),
         0 0 36px -8px var(--cat-glow);
     }
@@ -539,7 +525,7 @@ const hasMore = articles.length > initialCount;
       font-size: 0.92rem;
       cursor: pointer;
       box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
-      transition: all 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+      transition: all 0.25s cubic-bezier(0.28, 0.84, 0.42, 1);
     }
     .toggle-btn:hover {
       background: rgba(24, 30, 58, 0.85);
@@ -575,8 +561,7 @@ const hasMore = articles.length > initialCount;
     .diary-cta-card:hover .glass-specular-shell {
       border-color: rgba(255, 143, 171, 0.45);
       box-shadow:
-        inset 1.5px 1.5px 1px 0 rgba(255, 255, 255, 0.85),
-        inset -1px -1px 1px 0 rgba(255, 143, 171, 0.4),
+        inset 0 1px 0 rgba(255, 255, 255, 0.65),
         0 20px 60px -18px rgba(0, 0, 0, 0.8),
         0 0 36px -12px var(--pad-glow);
     }
@@ -656,9 +641,10 @@ const hasMore = articles.length > initialCount;
       let meowIdx = 0;
 
       avatarBox.addEventListener('click', () => {
-        avatarBox.classList.remove('is-bouncing');
+        // 软布丁果冻触感动画触发
+        avatarBox.classList.remove('jelly-active');
         void avatarBox.offsetWidth;
-        avatarBox.classList.add('is-bouncing');
+        avatarBox.classList.add('jelly-active');
 
         clearTimeout(typeTimer);
         clearTimeout(hideTimer);
