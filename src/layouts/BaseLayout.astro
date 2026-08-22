@@ -45,21 +45,28 @@ const mailtoUrl = `mailto:deadcat@dcat.sanyyao.com?subject=${mailSubject}&body=$
       <div class="cat-scroll-bar" id="catScrollBar"></div>
     </div>
 
-    <!-- 离顶悬浮 Apple Liquid Glass 胶囊导航栏 -->
-    <div class="nav-floating-wrap">
-      <header class="liquid-glass-nav">
-        <!-- 左侧品牌胶囊（点击回首页） -->
-        <a href="/" class="brand-capsule" title="返回首页">
+    <!-- 离顶悬浮 Apple Liquid Glass 独立多胶囊导航栏 -->
+    <div class="floating-nav-container">
+      <div class="wrap nav-wrap-inner">
+        <!-- 胶囊1：品牌胶囊（独立玻璃晶体，点击回首页） -->
+        <a href="/" class="liquid-capsule brand-capsule" title="返回首页">
+          <span class="capsule-specular"></span>
           <span class="brand-paw">🐾</span>
           <span class="brand-name">死猫的小网站</span>
         </a>
 
-        <!-- 右侧功能胶囊导航项 -->
-        <nav class="capsule-nav">
-          <a href="/#articles" class="nav-item-pill">文章</a>
-          <a href="/diary/" class="nav-item-pill">日记</a>
+        <!-- 胶囊2与3：功能导航独立胶囊组 -->
+        <nav class="nav-capsules-group">
+          <a href="/#articles" class="liquid-capsule nav-capsule" title="浏览文章">
+            <span class="capsule-specular"></span>
+            <span class="nav-text">文章</span>
+          </a>
+          <a href="/diary/" class="liquid-capsule nav-capsule" title="死猫的手账日记">
+            <span class="capsule-specular"></span>
+            <span class="nav-text">日记</span>
+          </a>
         </nav>
-      </header>
+      </div>
     </div>
 
     <main>
@@ -270,62 +277,72 @@ const mailtoUrl = `mailto:deadcat@dcat.sanyyao.com?subject=${mailSubject}&body=$
       }
 
       /* ─────────────────────────────────────────────
-         离顶悬浮 Apple Liquid Glass 胶囊导航
+         离顶悬浮 Apple Liquid Glass 独立多胶囊体系
          ───────────────────────────────────────────── */
-      .nav-floating-wrap {
+      .floating-nav-container {
         position: sticky;
-        top: 14px;
+        top: 16px;
         z-index: 50;
         width: 100%;
-        max-width: 760px;
-        margin: 0 auto;
-        padding: 0 20px;
-        pointer-events: none; /* 外层穿透，内层交互 */
+        pointer-events: none; /* 外层容器穿透，仅胶囊可交互 */
       }
 
-      .liquid-glass-nav {
-        pointer-events: auto;
+      .nav-wrap-inner {
         display: flex;
         align-items: center;
         justify-content: space-between;
-        padding: 7px 12px 7px 16px;
-        border-radius: 999px;
-        /* Apple Liquid Glass 核心质感 */
-        background: linear-gradient(135deg, rgba(20, 25, 48, 0.65), rgba(10, 13, 26, 0.45));
-        backdrop-filter: blur(28px) saturate(190%);
-        -webkit-backdrop-filter: blur(28px) saturate(190%);
-        border: 1px solid rgba(255, 255, 255, 0.14);
-        box-shadow:
-          0 16px 36px -10px rgba(0, 0, 0, 0.65),
-          0 0 24px -6px var(--cat-glow-soft),
-          inset 0 1.5px 0 rgba(255, 255, 255, 0.2),
-          inset 0 -1px 0 rgba(0, 0, 0, 0.4);
-        transition: all 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
-      }
-      .liquid-glass-nav:hover {
-        border-color: rgba(45, 212, 167, 0.35);
-        box-shadow:
-          0 20px 44px -8px rgba(0, 0, 0, 0.75),
-          0 0 32px -4px var(--cat-glow),
-          inset 0 1.5px 0 rgba(255, 255, 255, 0.25);
+        gap: 12px;
       }
 
-      /* 品牌左侧胶囊 */
-      .brand-capsule {
-        display: flex;
+      /* 核心 Liquid Glass 独立胶囊材质 */
+      .liquid-capsule {
+        pointer-events: auto;
+        position: relative;
+        display: inline-flex;
         align-items: center;
+        text-decoration: none;
+        border-radius: 999px;
+        background: var(--lg-bg);
+        backdrop-filter: var(--lg-blur);
+        -webkit-backdrop-filter: var(--lg-blur);
+        border: 1px solid var(--lg-border);
+        box-shadow: var(--lg-shadow), var(--lg-highlight);
+        transition: all 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
+        overflow: hidden;
+      }
+
+      /* 镜面高光反射层 */
+      .capsule-specular {
+        position: absolute;
+        inset: 0;
+        border-radius: inherit;
+        pointer-events: none;
+        box-shadow: inset 0 1px 1px 0 rgba(255, 255, 255, 0.45),
+                    inset 0 -1px 1px 0 rgba(0, 0, 0, 0.3);
+        opacity: 0.8;
+      }
+
+      /* 品牌左胶囊 */
+      .brand-capsule {
+        padding: 8px 18px;
         gap: 8px;
         color: var(--text-hi);
         font-weight: 700;
         font-size: 1.02rem;
         font-family: var(--font-cute);
         letter-spacing: 0.02em;
-        padding: 4px 6px;
-        transition: transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1), color 0.2s;
       }
       .brand-capsule:hover {
+        border-color: rgba(45, 212, 167, 0.45);
+        box-shadow:
+          0 20px 44px -8px rgba(0, 0, 0, 0.8),
+          0 0 28px -4px var(--cat-glow),
+          var(--lg-highlight);
+        transform: translateY(-2px);
         color: var(--cat-300);
-        transform: scale(1.02);
+      }
+      .brand-capsule:active {
+        transform: translateY(0) scale(0.96);
       }
       .brand-paw {
         font-size: 1.15rem;
@@ -336,34 +353,30 @@ const mailtoUrl = `mailto:deadcat@dcat.sanyyao.com?subject=${mailSubject}&body=$
         transform: rotate(-15deg) scale(1.18);
       }
 
-      /* 右侧胶囊项 */
-      .capsule-nav {
+      /* 右侧导航独立胶囊组 */
+      .nav-capsules-group {
         display: flex;
         align-items: center;
-        gap: 6px;
+        gap: 10px;
       }
-      .nav-item-pill {
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        padding: 6px 16px;
-        border-radius: 999px;
+      .nav-capsule {
+        padding: 8px 20px;
+        color: var(--text-mid);
         font-size: 0.92rem;
         font-family: var(--font-cute);
-        color: var(--text-mid);
-        background: rgba(255, 255, 255, 0.04);
-        border: 1px solid rgba(255, 255, 255, 0.06);
-        transition: all 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+        font-weight: 700;
       }
-      .nav-item-pill:hover {
+      .nav-capsule:hover {
         color: #fff;
-        background: rgba(45, 212, 167, 0.16);
-        border-color: rgba(45, 212, 167, 0.4);
-        box-shadow: 0 0 16px -2px var(--cat-glow);
-        transform: translateY(-1px);
+        border-color: rgba(45, 212, 167, 0.45);
+        box-shadow:
+          0 18px 36px -6px rgba(0, 0, 0, 0.8),
+          0 0 24px -2px var(--cat-glow),
+          var(--lg-highlight);
+        transform: translateY(-2px);
       }
-      .nav-item-pill:active {
-        transform: scale(0.95);
+      .nav-capsule:active {
+        transform: translateY(0) scale(0.94);
       }
 
       .site-foot {
