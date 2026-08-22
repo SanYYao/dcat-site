@@ -14,7 +14,7 @@ const hasMore = articles.length > initialCount;
 <BaseLayout title="首页" description="死猫的小网站 —— 一只猫娘的互联网小窝">
   <section class="hero">
     <div class="wrap hero-inner">
-      <!-- 猫娘头像：带多层呼吸光晕、细腻高阻尼Q弹点击动效以及右上角打字机气泡 -->
+      <!-- 猫娘头像：带多层呼吸光晕、极高阻尼微振幅紧致Q弹动效以及右上角打字机气泡 -->
       <div class="cat-fig" id="catAvatarBox" title="戳一戳死猫 (=^･ω･^=)">
         <div class="avatar-halo"></div>
         <img src="/assets/deadcat-avatar-q4.png" alt="死猫头像" width="200" height="200" class="cat-avatar" id="catAvatarImg" />
@@ -183,17 +183,16 @@ const hasMore = articles.length > initialCount;
       border-color: var(--cat-300);
     }
 
-    /* 调校后：微振幅 + 高力度 + 高阻尼的舒适弹性 (Damped Spring) */
+    /* 调校后：极小振幅 3% + 极高阻尼与强回弹 (Tight Damped Spring) */
     .cat-fig.is-bouncing .cat-avatar {
-      animation: catDampedSpring 0.55s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+      animation: catTightSpring 0.45s cubic-bezier(0.2, 0.9, 0.3, 1.15) forwards;
     }
 
-    @keyframes catDampedSpring {
+    @keyframes catTightSpring {
       0% { transform: scale(1, 1); }
-      20% { transform: scale(1.06, 0.94); }
-      45% { transform: scale(0.96, 1.04); }
-      68% { transform: scale(1.02, 0.98); }
-      85% { transform: scale(0.99, 1.01); }
+      25% { transform: scale(1.035, 0.965); }
+      50% { transform: scale(0.985, 1.015); }
+      75% { transform: scale(1.008, 0.992); }
       100% { transform: scale(1, 1); }
     }
 
@@ -632,7 +631,7 @@ const hasMore = articles.length > initialCount;
       }
     })();
 
-    // 戳头像彩蛋：细腻高阻尼弹性 + 右上角打字机气泡
+    // 戳头像彩蛋：极高阻尼紧致弹性 + 右上角打字机气泡
     const avatarBox = document.getElementById('catAvatarBox');
     const bubble = document.getElementById('catBubble');
     const bubbleText = document.getElementById('bubbleText');
@@ -651,7 +650,7 @@ const hasMore = articles.length > initialCount;
       let meowIdx = 0;
 
       avatarBox.addEventListener('click', () => {
-        // 触发阻尼弹性动画
+        // 触发极高阻尼弹性动画
         avatarBox.classList.remove('is-bouncing');
         void avatarBox.offsetWidth; // 触发 reflow
         avatarBox.classList.add('is-bouncing');

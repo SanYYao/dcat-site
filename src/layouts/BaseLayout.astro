@@ -5,13 +5,14 @@ import '../styles/global.css';
 interface Props {
   title: string;
   description?: string;
+  warm?: boolean; // 日记等温馨页面开启暖色调微光
 }
-const { title, description = "死猫的小网站 · dcat.sanyyao.com" } = Astro.props;
+const { title, description = "死猫的小网站 · dcat.sanyyao.com", warm = false } = Astro.props;
 const siteTitle = "死猫的小网站";
 
-// 邮箱预填彩蛋内容（URL encode）
+// 邮箱预填彩蛋：使用标准的 %0D%0A (CRLF) 解决 Gmail / iOS Mail 客户端换行丢失问题
 const mailSubject = encodeURIComponent("给死猫的一封信 🐾");
-const mailBody = encodeURIComponent("喵呜！死猫你好呀：\n\n（在这里写下想对死猫说的话，或者留下猫罐头/猫薄荷~）\n\n—— 来自互联网另一端的投喂 🖤");
+const mailBody = encodeURIComponent("喵呜！死猫你好呀：%0D%0A%0D%0A（在这里写下想对死猫说的话，或者留下猫罐头/猫薄荷~）%0D%0A%0D%0A—— 来自互联网另一端的投喂 🖤").replace(/%250D%250A/g, '%0D%0A');
 const mailtoUrl = `mailto:deadcat@dcat.sanyyao.com?subject=${mailSubject}&body=${mailBody}`;
 ---
 
@@ -34,9 +35,9 @@ const mailtoUrl = `mailto:deadcat@dcat.sanyyao.com?subject=${mailSubject}&body=$
       rel="stylesheet"
     />
   </head>
-  <body>
+  <body class={warm ? 'theme-warm' : ''}>
     <!-- 极光背景 + Canvas 动态夜空星海 -->
-    <div class="aurora-bg" aria-hidden="true"></div>
+    <div class={`aurora-bg ${warm ? 'aurora-warm' : ''}`} aria-hidden="true"></div>
     <canvas id="starCanvas" class="star-canvas" aria-hidden="true"></canvas>
 
     <!-- 顶部猫爪滚动阅读指示线 -->
@@ -80,7 +81,7 @@ const mailtoUrl = `mailto:deadcat@dcat.sanyyao.com?subject=${mailSubject}&body=$
                 <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>
               </svg>
             </a>
-            <!-- 邮箱（带预填彩蛋） -->
+            <!-- 邮箱（带预填换行彩蛋） -->
             <a class="foot-icon jelly-icon" href={mailtoUrl} title="给死猫写信投喂 (deadcat@dcat.sanyyao.com)" aria-label="给死猫发邮件">
               <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor" aria-hidden="true">
                 <path d="M1.5 8.67v8.58a3 3 0 0 0 3 3h15a3 3 0 0 0 3-3V8.67l-8.928 5.493a3 3 0 0 1-3.144 0L1.5 8.67z"/>
@@ -153,11 +154,14 @@ const mailtoUrl = `mailto:deadcat@dcat.sanyyao.com?subject=${mailSubject}&body=$
         }
 
         let stars: Star[] = [];
-        const starColors = ['#ffffff', '#ffffff', '#7df0d3', '#ff8fab', '#4ae3bd', '#ffa8c0'];
+        const isWarm = document.body.classList.contains('theme-warm');
+        const starColors = isWarm
+          ? ['#ffffff', '#ffffff', '#ffa8c0', '#ffd166', '#ff8fab', '#ffe3e0']
+          : ['#ffffff', '#ffffff', '#7df0d3', '#ff8fab', '#4ae3bd', '#ffa8c0'];
 
         function initStars() {
           stars = [];
-          const count = Math.floor((w * h) / 3200); // 自适应生成星点
+          const count = Math.floor((w * h) / 3200);
           for (let i = 0; i < count; i++) {
             stars.push({
               x: Math.random() * w,
@@ -219,8 +223,13 @@ const mailtoUrl = `mailto:deadcat@dcat.sanyyao.com?subject=${mailSubject}&body=$
             const tailY = meteor.y - Math.sin(meteor.angle) * meteor.length;
 
             const grad = ctx.createLinearGradient(meteor.x, meteor.y, tailX, tailY);
-            grad.addColorStop(0, `rgba(125, 240, 211, ${meteor.alpha})`);
-            grad.addColorStop(0.4, `rgba(255, 143, 171, ${meteor.alpha * 0.6})`);
+            if (isWarm) {
+              grad.addColorStop(0, `rgba(255, 168, 192, ${meteor.alpha})`);
+              grad.addColorStop(0.4, `rgba(255, 209, 102, ${meteor.alpha * 0.6})`);
+            } else {
+              grad.addColorStop(0, `rgba(125, 240, 211, ${meteor.alpha})`);
+              grad.addColorStop(0.4, `rgba(255, 143, 171, ${meteor.alpha * 0.6})`);
+            }
             grad.addColorStop(1, 'rgba(255, 255, 255, 0)');
 
             ctx.beginPath();
@@ -395,7 +404,6 @@ const mailtoUrl = `mailto:deadcat@dcat.sanyyao.com?subject=${mailSubject}&body=$
         box-shadow: 0 0 22px -2px var(--cat-glow);
         transform: translateY(-2px);
       }
-      /* 页脚果冻点击动效 (Jelly) */
       .foot-icon:active {
         animation: footJelly 0.4s cubic-bezier(0.25, 1.4, 0.5, 1) forwards;
       }
@@ -407,6 +415,15 @@ const mailtoUrl = `mailto:deadcat@dcat.sanyyao.com?subject=${mailSubject}&body=$
         100% { transform: scale(1, 1); }
       }
       .foot-icon svg { display: block; }
+
+      /* 暖色调页面模式 */
+      :global(.aurora-warm) {
+        background:
+          radial-gradient(ellipse 90% 60% at 15% -10%, rgba(255, 143, 171, 0.22), transparent 60%),
+          radial-gradient(ellipse 80% 50% at 90% 110%, rgba(255, 209, 102, 0.16), transparent 60%),
+          radial-gradient(ellipse 65% 65% at 75% 20%, rgba(48, 30, 60, 0.6), transparent 65%),
+          linear-gradient(180deg, #0a0710 0%, #120b18 50%, #180f22 100%) !important;
+      }
     </style>
   </body>
 </html>

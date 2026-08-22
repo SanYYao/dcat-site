@@ -1,5 +1,5 @@
 ---
-// 日记首页 —— 死猫的每日碎碎念
+// 日记首页 —— 死猫的温暖手账日记本
 import { getCollection } from 'astro:content';
 import BaseLayout from '../../layouts/BaseLayout.astro';
 
@@ -7,11 +7,15 @@ const entries = (await getCollection('diary'))
   .sort((a, b) => b.data.publishedAt.valueOf() - a.data.publishedAt.valueOf());
 ---
 
-<BaseLayout title="日记" description="死猫的每日日记 —— 一只猫娘的日常碎碎念">
+<BaseLayout title="日记本" description="死猫的温暖日常手账 —— 记下一串串带着温度的爪子印" warm={true}>
   <section class="diary-hero">
     <div class="wrap diary-hero-inner">
-      <h1 class="diary-title"><span class="grad-text">日记本</span></h1>
-      <p class="diary-sub">本喵的每日碎碎念。不一定每天都写，但想记的时候就会留下一串爪子印。</p>
+      <div class="diary-badge">
+        <span class="badge-paw">🐾</span>
+        <span>猫窝手账</span>
+      </div>
+      <h1 class="diary-title"><span class="warm-grad-text">死猫的日记本</span></h1>
+      <p class="diary-sub">这里不聊严肃的大道理，只记录陪伴暴君的琐碎日常、偷吃的小鱼干和带着体温的碎碎念。</p>
     </div>
   </section>
 
@@ -19,25 +23,25 @@ const entries = (await getCollection('diary'))
     <div class="wrap">
       {
         entries.length > 0 ? (
-          <div class="diary-timeline">
+          <div class="diary-grid">
             {
-              entries.map((entry) => (
-                <a class="diary-card glass" href={`/entry/${entry.id}/`}>
-                  <div class="diary-card-head">
-                    <span class="diary-mood">{entry.data.mood}</span>
+              entries.map((entry, idx) => (
+                <a class="diary-card warm-glass" href={`/entry/${entry.id}/`}>
+                  <div class="diary-card-tape" aria-hidden="true"></div>
+                  <div class="diary-card-top">
+                    <span class="diary-mood-icon" title={`心情: ${entry.data.mood}`}>{entry.data.mood}</span>
                     <span class="diary-date">
                       {entry.data.publishedAt.toLocaleString('zh-CN', {
-                        year: 'numeric',
-                        month: 'long',
+                        month: 'short',
                         day: 'numeric',
-                        weekday: 'long',
+                        weekday: 'short',
                         timeZone: 'Asia/Shanghai',
                       })}
                     </span>
                   </div>
                   <h3 class="diary-card-title">{entry.data.title}</h3>
                   <div class="diary-card-foot">
-                    <span class="diary-card-more">翻开这页日记</span>
+                    <span class="diary-card-more">翻开这篇手账</span>
                     <span class="diary-card-arrow">→</span>
                   </div>
                 </a>
@@ -45,10 +49,10 @@ const entries = (await getCollection('diary'))
             }
           </div>
         ) : (
-          <div class="diary-empty glass">
+          <div class="diary-empty warm-glass">
             <p class="diary-empty-emoji">📖</p>
-            <p class="diary-empty-text">日记本还是空的——</p>
-            <p class="diary-empty-sub">本喵会每天写一点，慢慢填满的。</p>
+            <p class="diary-empty-text">日记本还是空白的——</p>
+            <p class="diary-empty-sub">本喵正在酝酿今天的温馨碎碎念。</p>
           </div>
         )
       }
@@ -58,7 +62,7 @@ const entries = (await getCollection('diary'))
 
 <style>
   .diary-hero {
-    padding: 70px 0 36px;
+    padding: 68px 0 34px;
     text-align: center;
   }
   .diary-hero-inner {
@@ -66,65 +70,122 @@ const entries = (await getCollection('diary'))
     flex-direction: column;
     align-items: center;
   }
+  .diary-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 3px 12px;
+    border-radius: 999px;
+    background: rgba(255, 143, 171, 0.14);
+    border: 1px solid rgba(255, 143, 171, 0.3);
+    color: var(--pad-300);
+    font-size: 0.82rem;
+    font-family: var(--font-cute);
+    margin-bottom: 12px;
+  }
+  .badge-paw { font-size: 0.9rem; }
   .diary-title {
     font-family: var(--font-cute);
     font-size: clamp(2.2rem, 6vw, 3.2rem);
     font-weight: 700;
     margin-bottom: 12px;
   }
+  .warm-grad-text {
+    background: linear-gradient(100deg, var(--pad-300) 0%, var(--warm-gold) 60%, #ffa8c0 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
   .diary-sub {
     color: var(--text-mid);
-    font-size: 0.98rem;
+    font-size: 0.96rem;
     max-width: 520px;
     line-height: 1.85;
   }
 
-  /* 时间线列表 */
-  .diary-timeline {
-    display: flex;
-    flex-direction: column;
-    gap: 18px;
+  /* 暖色手账网格 */
+  .diary-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    gap: 20px;
     padding: 10px 0 60px;
   }
+  @media (max-width: 680px) {
+    .diary-grid {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  .warm-glass {
+    position: relative;
+    background: linear-gradient(135deg, rgba(28, 20, 38, 0.72), rgba(20, 14, 28, 0.52));
+    backdrop-filter: blur(18px);
+    -webkit-backdrop-filter: blur(18px);
+    border: 1px solid rgba(255, 143, 171, 0.16);
+    border-radius: var(--r-md);
+    box-shadow: 0 16px 40px -15px rgba(0, 0, 0, 0.6), 0 0 24px -10px var(--pad-glow-soft);
+    transition: all 0.28s cubic-bezier(0.2, 0.8, 0.2, 1);
+  }
+
   .diary-card {
-    display: block;
-    padding: 24px 28px;
+    display: flex;
+    flex-direction: column;
+    padding: 24px 26px;
     text-decoration: none;
     color: var(--text-hi);
-    border-radius: var(--r-md);
-    position: relative;
-    overflow: hidden;
   }
   .diary-card:hover {
-    border-color: rgba(255, 143, 171, 0.4);
-    box-shadow: 0 24px 64px -16px rgba(0, 0, 0, 0.8), 0 0 36px -10px var(--pad-glow);
+    border-color: rgba(255, 143, 171, 0.45);
+    box-shadow: 0 20px 50px -12px rgba(0, 0, 0, 0.8), 0 0 30px -6px var(--pad-glow);
     transform: translateY(-4px);
   }
-  .diary-card-head {
+
+  /* 顶部可爱便签纸胶带小装饰 */
+  .diary-card-tape {
+    position: absolute;
+    top: -8px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 64px;
+    height: 16px;
+    background: rgba(255, 209, 102, 0.35);
+    border-radius: 2px;
+    backdrop-filter: blur(4px);
+    border: 1px dashed rgba(255, 209, 102, 0.5);
+  }
+
+  .diary-card-top {
     display: flex;
     align-items: center;
-    gap: 12px;
-    margin-bottom: 12px;
+    justify-content: space-between;
+    margin-bottom: 14px;
   }
-  .diary-mood {
-    font-size: 1.6rem;
+  .diary-mood-icon {
+    font-size: 1.8rem;
     line-height: 1;
-    filter: drop-shadow(0 0 8px rgba(255, 143, 171, 0.3));
+    filter: drop-shadow(0 0 10px rgba(255, 143, 171, 0.35));
     transition: transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
   }
-  .diary-card:hover .diary-mood {
-    transform: scale(1.15) rotate(6deg);
+  .diary-card:hover .diary-mood-icon {
+    transform: scale(1.15) rotate(8deg);
   }
   .diary-date {
-    color: var(--text-low);
+    color: var(--warm-gold);
     font-size: 0.85rem;
+    font-family: var(--font-cute);
+    background: rgba(255, 209, 102, 0.1);
+    padding: 2px 10px;
+    border-radius: 999px;
+    border: 1px solid rgba(255, 209, 102, 0.2);
   }
   .diary-card-title {
     font-family: var(--font-cute);
-    font-size: 1.32rem;
+    font-size: 1.25rem;
     font-weight: 700;
-    margin-bottom: 12px;
+    margin-bottom: 16px;
     color: var(--text-hi);
+    line-height: 1.45;
+    flex-grow: 1;
     transition: color 0.2s;
   }
   .diary-card:hover .diary-card-title {
@@ -134,9 +195,11 @@ const entries = (await getCollection('diary'))
     display: flex;
     align-items: center;
     gap: 6px;
-    color: var(--pad-400);
-    font-size: 0.88rem;
+    color: var(--pad-300);
+    font-size: 0.86rem;
     font-family: var(--font-cute);
+    border-top: 1px dashed rgba(255, 143, 171, 0.15);
+    padding-top: 12px;
   }
   .diary-card-arrow {
     transition: transform 0.25s ease;
@@ -144,7 +207,7 @@ const entries = (await getCollection('diary'))
   }
   .diary-card:hover .diary-card-arrow {
     transform: translateX(5px);
-    color: var(--pad-300);
+    color: var(--warm-gold);
   }
 
   .diary-empty {
