@@ -127,7 +127,6 @@ const mailtoUrl = `mailto:deadcat@dcat.sanyyao.com?subject=${mailSubject}&body=$
 
     <!-- 全局脚本：滚动进度条、智能弹出/隐藏导航、Canvas 星空 -->
     <script>
-      // 1. 滚动进度条 & 智能导航弹出/隐藏（下滑向上弹开隐藏，上滑浮现）
       const scrollBar = document.getElementById('catScrollBar');
       const navEl = document.getElementById('floatingNav');
       let lastScrollY = window.scrollY;
@@ -145,11 +144,9 @@ const mailtoUrl = `mailto:deadcat@dcat.sanyyao.com?subject=${mailSubject}&body=$
 
         // 智能悬浮胶囊显示/隐藏
         if (navEl) {
-          if (currentY > 80 && currentY > lastScrollY + 8) {
-            // 向下滑动超过阈值 -> 向上弹出隐藏
+          if (currentY > 70 && currentY > lastScrollY + 6) {
             navEl.classList.add('nav-hidden');
-          } else if (currentY < lastScrollY - 8 || currentY <= 30) {
-            // 向上滑动或在顶部 -> 弹性浮现
+          } else if (currentY < lastScrollY - 6 || currentY <= 30) {
             navEl.classList.remove('nav-hidden');
           }
         }
@@ -165,7 +162,6 @@ const mailtoUrl = `mailto:deadcat@dcat.sanyyao.com?subject=${mailSubject}&body=$
         }
       }, { passive: true });
 
-      // 2. 高性能 Canvas 夜空繁星与流星
       const canvas = document.getElementById('starCanvas') as HTMLCanvasElement;
       if (canvas) {
         const ctx = canvas.getContext('2d');
@@ -312,6 +308,7 @@ const mailtoUrl = `mailto:deadcat@dcat.sanyyao.com?subject=${mailSubject}&body=$
 
       /* ─────────────────────────────────────────────
          离顶悬浮 Apple Liquid Glass 独立多胶囊体系
+         慢速从容丝滑动画 (0.65s 极柔和弹性曲线)
          ───────────────────────────────────────────── */
       .floating-nav-container {
         position: sticky;
@@ -319,12 +316,14 @@ const mailtoUrl = `mailto:deadcat@dcat.sanyyao.com?subject=${mailSubject}&body=$
         z-index: 50;
         width: 100%;
         pointer-events: none;
-        transition: transform 0.4s cubic-bezier(0.2, 0.9, 0.3, 1.15), opacity 0.3s ease;
+        transition: transform 0.65s cubic-bezier(0.16, 1, 0.3, 1),
+                    opacity 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+        will-change: transform, opacity;
       }
 
-      /* 智能向下滚动时：向上弹出隐藏 */
+      /* 智能向下滚动时：明显向上柔和弹出屏幕外 */
       .floating-nav-container.nav-hidden {
-        transform: translateY(-90px) scale(0.96);
+        transform: translateY(-110px) scale(0.92);
         opacity: 0;
       }
 
@@ -346,8 +345,8 @@ const mailtoUrl = `mailto:deadcat@dcat.sanyyao.com?subject=${mailSubject}&body=$
         border-radius: 999px;
         background: transparent;
         box-shadow: 0 14px 32px -8px rgba(0, 0, 0, 0.65);
-        transition: transform 0.25s cubic-bezier(0.2, 0.8, 0.2, 1),
-                    box-shadow 0.25s ease;
+        transition: transform 0.35s cubic-bezier(0.2, 0.8, 0.2, 1),
+                    box-shadow 0.35s ease;
       }
 
       /* 第 1 层：SVG 真实物理折射 */
@@ -375,7 +374,7 @@ const mailtoUrl = `mailto:deadcat@dcat.sanyyao.com?subject=${mailSubject}&body=$
         pointer-events: none;
       }
 
-      /* 第 3 层：超精细 1px 镜面微光切边（去除了粗白边） */
+      /* 第 3 层：超精细 1px 镜面微光切边 */
       .glass-shine {
         position: absolute;
         inset: 0;
