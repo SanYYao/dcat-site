@@ -27,15 +27,20 @@ export default function rehypeCorrectionTape() {
       const children = [];
       parts.forEach((part, i) => {
         if (i % 2 === 1) {
-          // 奇数下标 = ==...== 捕获内容 → 修正带
+          // 奇数下标 = ~~~...~~~ 捕获内容 → 拆成单字符修正带方块，包进一组
           children.push({
             type: 'element',
             tagName: 'span',
             properties: {
-              className: ['correction-tape'],
-              title: '修正带 · 悬停撕开看原文',
+              className: ['correction-tape-group'],
+              title: '修正带 · 悬停擦除看原文',
             },
-            children: [{ type: 'text', value: part }],
+            children: Array.from(part).map((ch) => ({
+              type: 'element',
+              tagName: 'span',
+              properties: { className: ['correction-tape'] },
+              children: [{ type: 'text', value: ch }],
+            })),
           });
         } else if (part) {
           children.push({ type: 'text', value: part });
