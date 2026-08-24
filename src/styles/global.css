@@ -415,7 +415,7 @@ a:hover { color: var(--cat-300); }
   line-height: 1em;
   margin: 0 1px;
   border-radius: 4px; /* 小圆角 */
-  background: rgba(180, 92, 124, 0.6); /* 日记标题粉 --pad-300 的暗版 */
+  background: rgba(45, 212, 167, 0.6); /* 文章主题翡翠绿 --cat-500 的暗版 */
   color: transparent;
   user-select: none;
   overflow: hidden;
@@ -425,6 +425,10 @@ a:hover { color: var(--cat-300); }
     color 0.28s ease,
     background-color 0.28s ease,
     box-shadow 0.28s ease;
+}
+/* 日记手账主题：方块换日记标题粉暗版（手账与文章是两套视觉） */
+body.theme-warm .correction-tape {
+  background: rgba(180, 92, 124, 0.6);
 }
 .correction-tape-group:hover .correction-tape,
 .correction-tape-group:focus-visible .correction-tape {
