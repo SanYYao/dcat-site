@@ -604,167 +604,157 @@ const hasMore = articles.length > initialCount;
   </style>
 
   <script>
-    (async () => {
-      const el = document.getElementById('quote-text');
-      const from = document.getElementById('quote-from');
-      const ctrl = new AbortController();
-      const timer = setTimeout(() => ctrl.abort(), 3000);
-      try {
-        const res = await fetch('https://v1.hitokoto.cn/?c=d&c=i', { signal: ctrl.signal });
-        const data = await res.json();
-        if (el) el.textContent = data.hitokoto;
-        if (from) from.textContent = data.from ? `—— ${data.from}` : '';
-      } catch {
-        if (el) el.textContent = '世界很大，本喵很小，但本喵在你的身边。';
-        if (from) from.textContent = '—— 死猫';
-      } finally {
-        clearTimeout(timer);
-      }
-    })();
+    // ── 首页交互：一言 / 头像戳戳气泡 / 文章折叠展开 ──
+    // SPA 切页后 body DOM 会被 ClientRouter 整体替换——若只初始化一次，
+    // 头像/展开按钮的监听会绑在已脱离页面的旧元素上（切页回来点不动）。
+    // 因此全部收进 initHomeFx()，由 astro:page-load（首载 + 每次切页）驱动；
+    // 内部用 token / 标记位做幂等守卫，重复调用无害。
 
-    const avatarBox = document.getElementById('catAvatarBox');
-    const avatarImg = document.getElementById('catAvatarImg');
-    const bubble = document.getElementById('catBubble');
-    const bubbleText = document.getElementById('bubbleText');
-    let typeTimer: any = null;
-    let hideTimer: any = null;
+    // 头像浮动/弹簧的连续 rAF 循环：旧实例用 token 停掉，避免切页后多个循环并存
+    let avatarFxToken = 0;
 
-    if (avatarBox && avatarImg && bubble && bubbleText) {
-      const meows = [
-        '喵！干嘛戳本喵！(=^･ω･^=)',
-        '呼噜呼噜……再摸摸嘛~',
-        '尾巴竖起来啦！🐾',
-        '本喵在盯着暴君呢 (・ω・)',
-        '耳朵抖了一下：收到暴君的抚摸！',
-        '再戳本喵要咬你手指头啦！(๑•̀ㅂ•́)و'
-      ];
-      let meowIdx = 0;
-
-      // ── 自适应帧率物理弹簧系统（短行程柔和，1.2s 收敛）──
-      // 推导：欠阻尼弹簧 x(t)=x0·e^(-ζωn·t)·cos(ωd·t)
-      //   要求 1.2s 收敛到 1%  →  ζωn = ln(100)/1.2 ≈ 3.835
-      //   取 ζ=0.8（阻尼足，过冲 ≈ 1.2%，几乎无拉伸感）
-      //   → ωn = 4.79，k = ωn² = 22.9，c = 2ζωn = 7.67
-      //   点击给初速度冲击 v0 = -1.1 → 平滑压到 0.93 → 反弹 1.012 → 1.2s 收敛
-      const spring = {
-        stiffness: 22.9,
-        damping: 7.67,
-        mass: 1,
-        scale: 1,
-        vel: 0,
-        floatY: 0,
-      };
-
-      let lastTime = performance.now();
-
-      function tick(now: number) {
-        // 真实帧间隔，钳制上限防止后台标签页/卡顿时 dt 爆炸
-        const dt = Math.min((now - lastTime) / 1000, 1 / 30);
-        lastTime = now;
-        const t = now / 1000;
-
-        // 持续柔和浮动（正弦，JS 驱动，同样自适应帧率）
-        spring.floatY = Math.sin(t * 1.15) * 8;
-
-        // 弹簧物理：回到 scale = 1
-        const force = -spring.stiffness * (spring.scale - 1) - spring.damping * spring.vel;
-        spring.vel += (force / spring.mass) * dt;
-        spring.scale += spring.vel * dt;
-
-        // 收敛判定
-        if (Math.abs(spring.scale - 1) < 0.0004 && Math.abs(spring.vel) < 0.0004) {
-          spring.scale = 1;
-          spring.vel = 0;
+    function initHomeFx() {
+      // ── 一言：拉取金句（每次进首页刷新一次，失败兜底）──
+      (async () => {
+        const el = document.getElementById('quote-text');
+        const from = document.getElementById('quote-from');
+        if (!el) return;
+        const ctrl = new AbortController();
+        const timer = setTimeout(() => ctrl.abort(), 3000);
+        try {
+          const res = await fetch('https://v1.hitokoto.cn/?c=d&c=i', { signal: ctrl.signal });
+          const data = await res.json();
+          if (el) el.textContent = data.hitokoto;
+          if (from) from.textContent = data.from ? `—— ${data.from}` : '';
+        } catch {
+          if (el) el.textContent = '世界很大，本喵很小，但本喵在你的身边。';
+          if (from) from.textContent = '—— 死猫';
+        } finally {
+          clearTimeout(timer);
         }
+      })();
 
-        avatarImg.style.transform = `translateY(${spring.floatY.toFixed(2)}px) scale(${spring.scale.toFixed(4)})`;
+      // ── 头像：戳戳 → 打字机气泡 + 物理弹簧浮动 ──
+      const avatarBox = document.getElementById('catAvatarBox');
+      const avatarImg = document.getElementById('catAvatarImg');
+      const bubble = document.getElementById('catBubble');
+      const bubbleText = document.getElementById('bubbleText');
+      if (avatarBox && avatarImg && bubble && bubbleText && !(avatarBox as HTMLElement).dataset.fxBound) {
+        (avatarBox as HTMLElement).dataset.fxBound = '1';
+        const token = ++avatarFxToken;
+
+        const meows = [
+          '喵！干嘛戳本喵！(=^･ω･^=)',
+          '呼噜呼噜……再摸摸嘛~',
+          '尾巴竖起来啦！🐾',
+          '本喵在盯着暴君呢 (・ω・)',
+          '耳朵抖了一下：收到暴君的抚摸！',
+          '再戳本喵要咬你手指头啦！(๑•̀ㅂ•́)و'
+        ];
+        let meowIdx = 0;
+
+        // 自适应帧率物理弹簧（短行程柔和，1.2s 收敛）：k=22.9, c=7.67, 点击 v0=-1.1
+        const spring = { stiffness: 22.9, damping: 7.67, mass: 1, scale: 1, vel: 0, floatY: 0 };
+        let lastTime = performance.now();
+        let typeTimer: any = null;
+        let hideTimer: any = null;
+
+        function tick(now: number) {
+          // 旧实例退役：token 不一致则停（切页后由新实例接管）
+          if (avatarFxToken !== token) return;
+          const dt = Math.min((now - lastTime) / 1000, 1 / 30);
+          lastTime = now;
+          const t = now / 1000;
+          spring.floatY = Math.sin(t * 1.15) * 8; // 持续柔和浮动
+          const force = -spring.stiffness * (spring.scale - 1) - spring.damping * spring.vel;
+          spring.vel += (force / spring.mass) * dt;
+          spring.scale += spring.vel * dt;
+          if (Math.abs(spring.scale - 1) < 0.0004 && Math.abs(spring.vel) < 0.0004) {
+            spring.scale = 1; spring.vel = 0;
+          }
+          avatarImg.style.transform = `translateY(${spring.floatY.toFixed(2)}px) scale(${spring.scale.toFixed(4)})`;
+          requestAnimationFrame(tick);
+        }
         requestAnimationFrame(tick);
+
+        // 点击：给初速度冲击（短行程压扁→轻微回弹→收敛），不跳变
+        avatarBox.addEventListener('click', () => {
+          spring.vel = -1.1;
+          clearTimeout(typeTimer);
+          clearTimeout(hideTimer);
+          const currentMsg = meows[meowIdx % meows.length];
+          meowIdx++;
+          bubbleText.textContent = '';
+          bubble.classList.add('show');
+          let charIdx = 0;
+          const typeChar = () => {
+            if (charIdx < currentMsg.length) {
+              bubbleText.textContent += currentMsg[charIdx];
+              charIdx++;
+              typeTimer = setTimeout(typeChar, 35);
+            } else {
+              hideTimer = setTimeout(() => { bubble.classList.remove('show'); }, 3500);
+            }
+          };
+          typeChar();
+        });
       }
 
-      requestAnimationFrame(tick);
+      // ── 文章折叠展开：弹性入场 ──
+      const toggleBtn = document.getElementById('toggleArticlesBtn');
+      const toggleBtnText = document.getElementById('toggleBtnText');
+      const hiddenCards = document.querySelectorAll('[data-article-item="hidden"]');
+      if (toggleBtn && hiddenCards.length > 0 && !toggleBtn.dataset.fxBound) {
+        toggleBtn.dataset.fxBound = '1';
+        let isExpanded = false;
+        const totalHidden = hiddenCards.length;
 
-      // 点击：给初速度冲击（短行程压扁→轻微回弹→收敛），不跳变
-      avatarBox.addEventListener('click', () => {
-        spring.vel = -1.1;
-
-        clearTimeout(typeTimer);
-        clearTimeout(hideTimer);
-
-        const currentMsg = meows[meowIdx % meows.length];
-        meowIdx++;
-
-        bubbleText.textContent = '';
-        bubble.classList.add('show');
-
-        let charIdx = 0;
-        const typeChar = () => {
-          if (charIdx < currentMsg.length) {
-            bubbleText.textContent += currentMsg[charIdx];
-            charIdx++;
-            typeTimer = setTimeout(typeChar, 35);
-          } else {
-            hideTimer = setTimeout(() => {
-              bubble.classList.remove('show');
-            }, 3500);
-          }
+        // 展开卡片弹性入场：与全局弹簧同参数（k=22.9, c=7.67），
+        // 从 scale 0.94 弹回 1（轻微回弹），错峰 60ms 依次弹出
+        const popInSpring = (el: HTMLElement, delayMs: number) => {
+          const spring = { scale: 0.94, vel: 0 };
+          setTimeout(() => {
+            let lastTime = performance.now();
+            const tick = (now: number) => {
+              const dt = Math.min((now - lastTime) / 1000, 1 / 30);
+              lastTime = now;
+              const force = -22.9 * (spring.scale - 1) - 7.67 * spring.vel;
+              spring.vel += force * dt;
+              spring.scale += spring.vel * dt;
+              el.style.transform = `scale(${spring.scale.toFixed(4)})`;
+              if (Math.abs(spring.scale - 1) < 0.0005 && Math.abs(spring.vel) < 0.0005) {
+                el.style.transform = '';
+                return;
+              }
+              requestAnimationFrame(tick);
+            };
+            requestAnimationFrame(tick);
+          }, delayMs);
         };
 
-        typeChar();
-      });
-    }
-
-    const toggleBtn = document.getElementById('toggleArticlesBtn');
-    const toggleBtnText = document.getElementById('toggleBtnText');
-    const hiddenCards = document.querySelectorAll('[data-article-item="hidden"]');
-
-    if (toggleBtn && hiddenCards.length > 0) {
-      let isExpanded = false;
-      const totalHidden = hiddenCards.length;
-
-      // 展开卡片弹性入场：与全局弹簧同参数（k=22.9, c=7.67），
-      // 从 scale 0.94 弹回 1（轻微回弹），错峰 60ms 依次弹出
-      const popInSpring = (el: HTMLElement, delayMs: number) => {
-        const spring = { scale: 0.94, vel: 0 };
-        setTimeout(() => {
-          let lastTime = performance.now();
-          const tick = (now: number) => {
-            const dt = Math.min((now - lastTime) / 1000, 1 / 30);
-            lastTime = now;
-            const force = -22.9 * (spring.scale - 1) - 7.67 * spring.vel;
-            spring.vel += force * dt;
-            spring.scale += spring.vel * dt;
-            el.style.transform = `scale(${spring.scale.toFixed(4)})`;
-            if (Math.abs(spring.scale - 1) < 0.0005 && Math.abs(spring.vel) < 0.0005) {
-              el.style.transform = '';
-              return;
+        toggleBtn.addEventListener('click', () => {
+          isExpanded = !isExpanded;
+          toggleBtn.classList.toggle('expanded', isExpanded);
+          toggleBtn.setAttribute('aria-expanded', String(isExpanded));
+          hiddenCards.forEach((card, i) => {
+            if (isExpanded) {
+              card.classList.remove('card-collapsed');
+              card.classList.add('card-show');
+              popInSpring(card as HTMLElement, i * 60);
+            } else {
+              card.classList.remove('card-show');
+              card.classList.add('card-collapsed');
+              (card as HTMLElement).style.transform = '';
             }
-            requestAnimationFrame(tick);
-          };
-          requestAnimationFrame(tick);
-        }, delayMs);
-      };
-
-      toggleBtn.addEventListener('click', () => {
-        isExpanded = !isExpanded;
-        toggleBtn.classList.toggle('expanded', isExpanded);
-        toggleBtn.setAttribute('aria-expanded', String(isExpanded));
-
-        hiddenCards.forEach((card, i) => {
-          if (isExpanded) {
-            card.classList.remove('card-collapsed');
-            card.classList.add('card-show');
-            popInSpring(card as HTMLElement, i * 60);
-          } else {
-            card.classList.remove('card-show');
-            card.classList.add('card-collapsed');
-            (card as HTMLElement).style.transform = '';
+          });
+          if (toggleBtnText) {
+            toggleBtnText.textContent = isExpanded ? '收起多余文章' : `展开其余 ${totalHidden} 篇`;
           }
         });
-
-        if (toggleBtnText) {
-          toggleBtnText.textContent = isExpanded ? '收起多余文章' : `展开其余 ${totalHidden} 篇`;
-        }
-      });
+      }
     }
+
+    document.addEventListener('astro:page-load', initHomeFx);
+    initHomeFx();
   </script>
 </BaseLayout>
