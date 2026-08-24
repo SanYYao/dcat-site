@@ -83,18 +83,26 @@ const mailtoUrl = `mailto:deadcat@dcat.sanyyao.com?subject=${mailSubject}&body=$
       </div>
     </div>
 
-    <!-- 全屏切页 Loader（猫爪呼吸 + 翡翠涟漪，transition:persist 跨页存活） -->
+    <!-- 全屏切页 Loader（三阶段动画：入场/循环/出场，transition:persist 跨页存活） -->
     <div id="page-loader" class="page-loader" aria-hidden="true" role="status" aria-live="polite" transition:persist>
       <div class="loader-stage">
-        <span class="ripple r1"></span>
-        <span class="ripple r2"></span>
-        <span class="ripple r3"></span>
+        <!-- 猫爪轮廓脉冲圈（非圆形几何形，贴合主题） -->
+        <svg class="pulse-paw" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+          <ellipse cx="50" cy="66" rx="23" ry="19"/>
+          <ellipse cx="21" cy="37" rx="10" ry="12.5"/>
+          <ellipse cx="40" cy="19" rx="9.5" ry="12.5"/>
+          <ellipse cx="62" cy="19" rx="9.5" ry="12.5"/>
+          <ellipse cx="80" cy="37" rx="10" ry="12.5"/>
+        </svg>
+        <!-- 猫爪图标 + 粉色肉垫 -->
         <svg class="paw-icon" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
           <ellipse cx="50" cy="66" rx="23" ry="19"/>
           <ellipse cx="21" cy="37" rx="10" ry="12.5"/>
           <ellipse cx="40" cy="19" rx="9.5" ry="12.5"/>
           <ellipse cx="62" cy="19" rx="9.5" ry="12.5"/>
           <ellipse cx="80" cy="37" rx="10" ry="12.5"/>
+          <!-- 粉色肉垫（掌垫）：心形，居中坐在掌部椭圆 (50,66) 上，视觉重心对齐 -->
+          <path d="M44 76.5c-6.5-5.8-12-10-12-16 0-5.4 4.2-9.6 9.4-9.6 3.6 0 6.6 1.8 8.6 4.2 2-2.4 5-4.2 8.6-4.2 5.2 0 9.4 4.2 9.4 9.6 0 6-5.5 10.2-12 16z" fill="var(--pad-400)"/>
         </svg>
       </div>
       <p class="loader-text">喵生检测中…</p>
@@ -345,36 +353,164 @@ const mailtoUrl = `mailto:deadcat@dcat.sanyyao.com?subject=${mailSubject}&body=$
         });
       }
 
-      // ── 全屏切页 Loader：ClientRouter 生命周期事件驱动 ──
-      // document 级监听 + loader 用 transition:persist 跨页存活（节点不变），所以只绑一次
+      // ── 全屏切页 Loader：三阶段动画状态机（入场/循环/出场）──
+      // 高斯模糊秒出 → 0.2s 后 → 脉冲圈贝塞尔展开 → 猫爪带肉垫缩放出现
+      // → 循环呼吸（加载慢兜底）→ 出场（猫爪放大→缩小 + 脉冲冲出屏幕）
+      // ⚠️ 所有阶段用「当前 scale 作为起点」插值到目标值，不写死数值——
+      //    循环任意缩放点被快进到出场都能平滑衔接，不跳变。
+      // 由 ClientRouter 生命周期事件驱动（document 级 + loader persist，只绑一次）
       function bindLoader() {
         const pageLoader = document.getElementById('page-loader');
         if (!pageLoader || (window as any).__loaderBound) return;
         (window as any).__loaderBound = true;
-        const LOADER_MIN_MS = 2400; // 与 .paw-icon 的 breathe 动画周期（2.4s）对齐
+
+        const pulseEl = pageLoader.querySelector('.pulse-paw') as HTMLElement;
+        const pawEl = pageLoader.querySelector('.paw-icon') as HTMLElement;
+        if (!pulseEl || !pawEl) return;
+
+        // 缓动函数（贝塞尔近似）
+        const easeOutCubic = (t: number) => 1 - Math.pow(1 - t, 3);
+        const easeOutBack = (t: number) => { const c1 = 1.70158, c3 = c1 + 1; return 1 + c3 * Math.pow(t - 1, 3) + c1 * Math.pow(t - 1, 2); };
+        const easeInCubic = (t: number) => t * t * t;
+
+        // 当前缩放值（状态机插值的锚点）
+        let pulseScale = 0;
+        let pawScale = 0;
+        let rafId: number | null = null;
+        let loopPhase = 'idle'; // idle | entrance | loop | exit
+        let loopT = 0;          // 循环呼吸相位
+        let exitDone: (() => void) | null = null;
+
+        // 应用 transform
+        function applyScales() {
+          pulseEl.style.transform = `scale(${pulseScale.toFixed(4)})`;
+          pawEl.style.transform = `scale(${pawScale.toFixed(4)})`;
+        }
+
+        // 核心：rAF 驱动一条「从当前值插值到目标值」的补间
+        // 每个阶段 start() 时记录起点（当前值），目标 + 时长 + 缓动 → 平滑过渡
+        let fromPulse = 0, fromPaw = 0, toPulse = 0, toPaw = 0;
+        let tweenStart = 0, tweenDur = 0;
+        let tweenEase: (t: number) => number = easeOutCubic;
+        let tweenOnDone: (() => void) | null = null;
+
+        function startTween(pT: number, wT: number, durMs: number, ease: (t: number) => number, onDone?: () => void) {
+          fromPulse = pulseScale; fromPaw = pawScale;
+          toPulse = pT; toPaw = wT;
+          tweenStart = performance.now();
+          tweenDur = durMs;
+          tweenEase = ease;
+          tweenOnDone = onDone || null;
+          // 关键修复：先停掉可能还占着 rafId 的循环 rAF，再启动补间，
+          // 否则出场/入场的补间会因为 rafId 非 null 而根本不启动（第二段卡住的根因）
+          if (rafId !== null) { cancelAnimationFrame(rafId); rafId = null; }
+          rafId = requestAnimationFrame(tick);
+        }
+
+        function tick(now: number) {
+          const t = Math.min(1, (now - tweenStart) / tweenDur);
+          const e = tweenEase(t);
+          pulseScale = fromPulse + (toPulse - fromPulse) * e;
+          pawScale = fromPaw + (toPaw - fromPaw) * e;
+          applyScales();
+
+          if (t < 1) {
+            rafId = requestAnimationFrame(tick);
+          } else {
+            rafId = null;
+            if (tweenOnDone) { const fn = tweenOnDone; tweenOnDone = null; fn(); }
+          }
+        }
+
+        // ── 入场：脉冲圈 0→1，到位后猫爪 0→1 ──
+        function playEntrance() {
+          loopPhase = 'entrance';
+          // 阶段1a：脉冲圈从中心贝塞尔展开
+          startTween(1, 0, 420, easeOutCubic, () => {
+            // 阶段1b：猫爪跟随出现（轻微过冲）
+            startTween(1.15, 1, 380, easeOutBack, () => {
+              // 进入循环
+              loopPhase = 'loop';
+              loopT = 0;
+              rafId = requestAnimationFrame(loopTick);
+            });
+          });
+        }
+
+        // ── 循环：猫爪呼吸 + 脉冲圈比入场大一圈（1.15 常驻）──
+        function loopTick(now: number) {
+          if (loopPhase !== 'loop') {
+            // 离开循环阶段：清掉 rafId，让 startTween 能接手
+            rafId = null;
+            return;
+          }
+          // 呼吸相位：猫爪 0.9↔1.08 正弦，周期约 1.2s；脉冲圈 1.15 微呼吸
+          loopT += 16 / 1000;
+          pawScale = 0.99 + Math.sin(loopT * Math.PI * 1.6) * 0.09;
+          pulseScale = 1.15 + Math.sin(loopT * Math.PI * 1.6) * 0.05;
+          applyScales();
+          rafId = requestAnimationFrame(loopTick);
+        }
+
+        // ── 出场：猫爪放大(0.15s)→缩小(0.2s) + 脉冲冲出屏幕 ──
+        function playExit(onDone: () => void) {
+          // 循环可能在任何 scale 被快进——从当前值插值，不跳变
+          loopPhase = 'exit';
+          exitDone = onDone;
+          // 阶段3a：猫爪放大（比循环最大略大），脉冲开始外扩
+          startTween(1.3, 1.25, 150, easeOutCubic, () => {
+            // 阶段3b：猫爪快速缩小 + 脉冲猛扩冲出屏幕
+            startTween(3.5, 0.4, 200, easeInCubic, () => {
+              if (exitDone) { const fn = exitDone; exitDone = null; fn(); }
+            });
+          });
+        }
+
+        // ── 对外：显示（高斯模糊秒出 + 入场动画）──
+        function showLoader() {
+          // 模糊 + 盖层秒出（不进动画，遮 WebKit 切换）
+          pageLoader.classList.add('active');
+          pageLoader.setAttribute('aria-hidden', 'false');
+          // 重置
+          pulseScale = 0; pawScale = 0; applyScales();
+          // 0.2s 后开始入场动画（先让模糊盖住，再启动内部动画）
+          setTimeout(() => {
+            if (loopPhase === 'idle' || loopPhase === 'exit') playEntrance();
+          }, 200);
+        }
+
+        // ── 对外：隐藏（出场动画后淡出）──
+        function hideLoader() {
+          playExit(() => {
+            pageLoader.classList.remove('active');
+            pageLoader.setAttribute('aria-hidden', 'true');
+            loopPhase = 'idle';
+            pulseScale = 0; pawScale = 0; applyScales();
+          });
+        }
+
+        // ── ClientRouter 事件 ──
         let showStart = 0;
         let hideTimer: number | null = null;
+        const LOADER_MIN_MS = 2400; // 至少展示满一个呼吸周期，让动画可被看见
 
         document.addEventListener('astro:before-preparation', (e) => {
-          // 站内锚点（同 URL 带 #hash）不是真正的切页，不弹 Loader，避免卡死
+          // 站内锚点（同 URL 带 #hash）不是真正的切页，不弹 Loader
           const from = (e as any)?.from?.href || location.href;
           const to = (e as any)?.to?.href || '';
           const sameDoc = to.replace(/#.*$/, '') === from.replace(/#.*$/, '');
           if (sameDoc) return;
           showStart = Date.now();
           if (hideTimer) { clearTimeout(hideTimer); hideTimer = null; }
-          pageLoader.classList.add('active');
-          pageLoader.setAttribute('aria-hidden', 'false');
+          showLoader();
         });
 
-        // 兜底保险：即使 astro:page-load 因任何原因没触发（导航中断/异常），超时强制隐藏
-        const MAX_SHOW_MS = 4000;
+        // 兜底保险：即使 page-load 没触发（异常），超时强制隐藏
+        const MAX_SHOW_MS = 5000;
         document.addEventListener('astro:before-preparation', () => {
           if (hideTimer) { clearTimeout(hideTimer); }
           hideTimer = window.setTimeout(() => {
-            pageLoader.classList.remove('active');
-            pageLoader.setAttribute('aria-hidden', 'true');
-            hideTimer = null;
+            if (loopPhase !== 'idle') hideLoader();
           }, MAX_SHOW_MS);
         });
 
@@ -383,9 +519,7 @@ const mailtoUrl = `mailto:deadcat@dcat.sanyyao.com?subject=${mailSubject}&body=$
           const wait = Math.max(0, LOADER_MIN_MS - elapsed);
           if (hideTimer) { clearTimeout(hideTimer); }
           hideTimer = window.setTimeout(() => {
-            pageLoader.classList.remove('active');
-            pageLoader.setAttribute('aria-hidden', 'true');
-            hideTimer = null;
+            if (loopPhase !== 'idle') hideLoader();
           }, wait);
         });
       }
@@ -616,8 +750,9 @@ const mailtoUrl = `mailto:deadcat@dcat.sanyyao.com?subject=${mailSubject}&body=$
       }
 
       /* ─────────────────────────────────────────────
-         全屏切页 Loader（猫爪呼吸 + 翡翠涟漪）
-         夜猫系：翡翠绿 cat-500 + 糖圆体 + 深墨蓝底
+         全屏切页 Loader（三阶段动画：入场/循环/出场）
+         夜猫系：翡翠绿 cat-500 + 粉肉垫 pad-400 + 深墨蓝底
+         动画全部由 JS rAF 状态机驱动（不写死数值，循环任意点可平滑出场）
          ───────────────────────────────────────────── */
       .page-loader {
         position: fixed;
@@ -653,51 +788,37 @@ const mailtoUrl = `mailto:deadcat@dcat.sanyyao.com?subject=${mailSubject}&body=$
         justify-content: center;
       }
 
+      /* 猫爪轮廓脉冲圈：描边猫爪（非圆形），由 JS 控制 transform: scale */
+      .pulse-paw {
+        position: absolute;
+        z-index: 1;
+        width: 54px;
+        height: 54px;
+        fill: none;
+        stroke: var(--cat-500);
+        stroke-width: 1.6;
+        stroke-linecap: round;
+        stroke-linejoin: round;
+        filter: drop-shadow(0 0 8px var(--cat-glow));
+        opacity: 0.85;
+        transform: scale(0); /* JS 驱动，入场从 0 展开 */
+        will-change: transform;
+        backface-visibility: hidden;
+        -webkit-backface-visibility: hidden;
+      }
+
+      /* 猫爪图标 + 粉色肉垫（心形掌垫），由 JS 控制 transform: scale */
       .paw-icon {
-        position: relative;
+        position: absolute;
         z-index: 2;
         width: 54px;
         height: 54px;
         fill: var(--cat-500);
         filter: drop-shadow(0 0 4px var(--cat-glow)) drop-shadow(0 0 14px var(--cat-glow));
-        animation: breathe 2.4s ease-in-out infinite;
-        animation-play-state: paused;
-      }
-      .page-loader.active .paw-icon { animation-play-state: running; }
-
-      @keyframes breathe {
-        0%, 100% { opacity: 0.5; transform: scale(0.9); }
-        50% { opacity: 1; transform: scale(1.08); }
-      }
-
-      .ripple {
-        --delay: 0s;
-        position: absolute;
-        top: 50%;
-        left: 50%;
-        width: 46px;
-        height: 46px;
-        margin: -23px 0 0 -23px;
-        border-radius: 50%;
-        border: 1.5px solid var(--cat-500);
-        box-shadow: 0 0 10px var(--cat-glow), inset 0 0 10px var(--cat-glow);
-        opacity: 0;
-        z-index: 1;
-      }
-      .ripple.r2 { --delay: 0.7s; }
-      .ripple.r3 { --delay: 1.4s; }
-
-      .page-loader.active .ripple {
-        animation-name: ripple-pulse;
-        animation-duration: 2.1s;
-        animation-timing-function: ease-out;
-        animation-iteration-count: infinite;
-        animation-delay: var(--delay);
-      }
-
-      @keyframes ripple-pulse {
-        0%   { transform: scale(0.35); opacity: 0.75; }
-        100% { transform: scale(3.6); opacity: 0; }
+        transform: scale(0); /* JS 驱动 */
+        will-change: transform;
+        backface-visibility: hidden;
+        -webkit-backface-visibility: hidden;
       }
 
       .loader-text {
@@ -711,7 +832,7 @@ const mailtoUrl = `mailto:deadcat@dcat.sanyyao.com?subject=${mailSubject}&body=$
       }
 
       @media (prefers-reduced-motion: reduce) {
-        .paw-icon, .ripple { animation: none !important; }
+        .page-loader { display: none !important; }
       }
     </style>
   </body>
