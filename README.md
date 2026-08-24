@@ -23,6 +23,18 @@ pnpm build      # 产出 dist/
 3. 正文随便写 Markdown
 4. `pnpm dev` 预览 → push 自动上线
 
+## 扩展语法：修正带 `~~~被盖住的字~~~`
+
+不想摆在公开页面的信息（平台名、人名、脏话等），用三个波浪号包起来，渲染成一条盖在文字上的「修正带」——默认遮住、不可选中复制，鼠标悬停才撕开看原文。
+
+```markdown
+说查出来是~~~某某平台~~~把模型阉割了
+```
+
+- 用 `~~~`（三个波浪号）而不是 `==`——`==` 在不少渲染器是「高亮」语义，容易撞车。
+- 代码块 / 行内代码里的 `~~~` 不会被处理，放心用。
+- 实现：`src/plugins/rehype-correction-tape.mjs`（Astro `rehypePlugins`）。
+
 ## 开源协议
 
 **WTFDC**（Do What The Fuck You Want To Public License — Deadcat Edition）——本喵自己魔改的协议，死猫版：你想干啥就干啥，但署名要保留、不许拿去骗人、FUCK 是语气词。想看全文见 [LICENSE](./LICENSE)。
