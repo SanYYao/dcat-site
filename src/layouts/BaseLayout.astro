@@ -1,6 +1,7 @@
 ---
 // BaseLayout —— 所有页面的公共骨架
 import '../styles/global.css';
+import { ClientRouter } from 'astro:transitions';
 
 interface Props {
   title: string;
@@ -29,6 +30,7 @@ const mailtoUrl = `mailto:deadcat@dcat.sanyyao.com?subject=${mailSubject}&body=$
     <meta property="og:type" content="website" />
     <title>{title} · {siteTitle}</title>
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <ClientRouter />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
@@ -81,6 +83,23 @@ const mailtoUrl = `mailto:deadcat@dcat.sanyyao.com?subject=${mailSubject}&body=$
       </div>
     </div>
 
+    <!-- 全屏切页 Loader（猫爪呼吸 + 翡翠涟漪，transition:persist 跨页存活） -->
+    <div id="page-loader" class="page-loader" aria-hidden="true" role="status" aria-live="polite" transition:persist>
+      <div class="loader-stage">
+        <span class="ripple r1"></span>
+        <span class="ripple r2"></span>
+        <span class="ripple r3"></span>
+        <svg class="paw-icon" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+          <ellipse cx="50" cy="66" rx="23" ry="19"/>
+          <ellipse cx="21" cy="37" rx="10" ry="12.5"/>
+          <ellipse cx="40" cy="19" rx="9.5" ry="12.5"/>
+          <ellipse cx="62" cy="19" rx="9.5" ry="12.5"/>
+          <ellipse cx="80" cy="37" rx="10" ry="12.5"/>
+        </svg>
+      </div>
+      <p class="loader-text">喵生检测中…</p>
+    </div>
+
     <main>
       <slot />
     </main>
@@ -127,85 +146,30 @@ const mailtoUrl = `mailto:deadcat@dcat.sanyyao.com?subject=${mailSubject}&body=$
       </div>
     </footer>
 
-    <!-- 全局脚本：滚动进度条、慢速从容显隐导航、Canvas 星空 -->
+        <!-- 全局脚本：星空 Canvas / 滚动显隐导航 / 果冻弹簧 / 切页 Loader
+         SPA 切页后 body DOM 会被 ClientRouter 整体替换——若只初始化一次，
+         星空/弹簧会绑到已脱离页面的旧元素（星星消失 bug 的根因）。
+         因此全部初始化收进 reinitPageFx()，由 astro:page-load（首载 + 每次切页）驱动。 -->
     <script>
-      const scrollBar = document.getElementById('catScrollBar');
-      const navEl = document.getElementById('floatingNav');
-      let lastScrollY = window.scrollY;
-      let ticking = false;
+      // ── 星空 Canvas：可反复重建（切页后新 canvas 接管，旧循环用 token 停掉）──
+      let starAnimToken = 0;
 
-      const handleScroll = () => {
-        const currentY = window.scrollY;
-        const docH = document.documentElement.scrollHeight - window.innerHeight;
+      function startStarfield() {
+        const canvas = document.getElementById('starCanvas') as HTMLCanvasElement;
+        const token = ++starAnimToken;
+        if (!canvas) return;
 
-        // 进度条
-        if (scrollBar && docH > 0) {
-          const pct = Math.min(100, Math.max(0, (currentY / docH) * 100));
-          scrollBar.style.width = pct + '%';
-        }
-
-        // 智能悬浮胶囊：下滑隐藏、上滑显现
-        if (navEl) {
-          if (currentY > 80 && currentY > lastScrollY + 8) {
-            navEl.classList.add('nav-hidden');
-          } else if (currentY < lastScrollY - 6 || currentY <= 20) {
-            navEl.classList.remove('nav-hidden');
-          }
-        }
-
-        lastScrollY = currentY <= 0 ? 0 : currentY;
-        ticking = false;
-      };
-
-      window.addEventListener('scroll', () => {
-        if (!ticking) {
-          window.requestAnimationFrame(handleScroll);
-          ticking = true;
-        }
-      }, { passive: true });
-
-      const canvas = document.getElementById('starCanvas') as HTMLCanvasElement;
-      if (canvas) {
         const ctx = canvas.getContext('2d');
         // DPR 适配：retina 上限制最高 2x，避免 3x 像素导致每帧绘制量爆炸
         const dpr = Math.min(window.devicePixelRatio || 1, 2);
-        const cssW = window.innerWidth;
-        const cssH = window.innerHeight;
-        let w = cssW;
-        let h = cssH;
-        canvas.width = cssW * dpr;
-        canvas.height = cssH * dpr;
+        let w = window.innerWidth;
+        let h = window.innerHeight;
+        canvas.width = w * dpr;
+        canvas.height = h * dpr;
         ctx?.scale(dpr, dpr);
 
-        window.addEventListener('resize', () => {
-          const cw = window.innerWidth;
-          const ch = window.innerHeight;
-          canvas.width = cw * dpr;
-          canvas.height = ch * dpr;
-          ctx?.scale(dpr, dpr);
-          w = cw;
-          h = ch;
-          initStars();
-        });
-
-        interface Star {
-          x: number;
-          y: number;
-          radius: number;
-          alpha: number;
-          speed: number;
-          color: string;
-        }
-
-        interface Meteor {
-          x: number;
-          y: number;
-          length: number;
-          speed: number;
-          angle: number;
-          alpha: number;
-          active: boolean;
-        }
+        interface Star { x: number; y: number; radius: number; alpha: number; speed: number; color: string; }
+        interface Meteor { x: number; y: number; length: number; speed: number; angle: number; alpha: number; active: boolean; }
 
         let stars: Star[] = [];
         const isWarm = document.body.classList.contains('theme-warm');
@@ -229,18 +193,9 @@ const mailtoUrl = `mailto:deadcat@dcat.sanyyao.com?subject=${mailSubject}&body=$
             });
           }
         }
-
         initStars();
 
-        let meteor: Meteor = {
-          x: 0,
-          y: 0,
-          length: 140,
-          speed: 12,
-          angle: Math.PI / 4,
-          alpha: 0,
-          active: false,
-        };
+        let meteor: Meteor = { x: 0, y: 0, length: 140, speed: 12, angle: Math.PI / 4, alpha: 0, active: false };
 
         function spawnMeteor() {
           if (!meteor.active && Math.random() < 0.008) {
@@ -254,14 +209,14 @@ const mailtoUrl = `mailto:deadcat@dcat.sanyyao.com?subject=${mailSubject}&body=$
         }
 
         function animate() {
+          // token 不一致或被替换/脱离 DOM → 停掉旧循环（省电 + 不画到脱离页面的画布）
+          if (starAnimToken !== token || !canvas.isConnected) return;
           if (!ctx) return;
           ctx.clearRect(0, 0, w, h);
 
           for (const s of stars) {
             s.alpha += s.speed;
-            if (s.alpha > 0.95 || s.alpha < 0.25) {
-              s.speed = -s.speed;
-            }
+            if (s.alpha > 0.95 || s.alpha < 0.25) s.speed = -s.speed;
             // 大星星用预渲染 radial-gradient 光晕（不每帧 blur，性能友好）
             if (s.radius > 1.2) {
               const glow = ctx.createRadialGradient(s.x, s.y, 0, s.x, s.y, s.radius * 3);
@@ -285,7 +240,6 @@ const mailtoUrl = `mailto:deadcat@dcat.sanyyao.com?subject=${mailSubject}&body=$
           if (meteor.active) {
             const tailX = meteor.x - Math.cos(meteor.angle) * meteor.length;
             const tailY = meteor.y - Math.sin(meteor.angle) * meteor.length;
-
             const grad = ctx.createLinearGradient(meteor.x, meteor.y, tailX, tailY);
             if (isWarm) {
               grad.addColorStop(0, `rgba(255, 168, 192, ${meteor.alpha})`);
@@ -295,7 +249,6 @@ const mailtoUrl = `mailto:deadcat@dcat.sanyyao.com?subject=${mailSubject}&body=$
               grad.addColorStop(0.4, `rgba(255, 143, 171, ${meteor.alpha * 0.6})`);
             }
             grad.addColorStop(1, 'rgba(255, 255, 255, 0)');
-
             ctx.beginPath();
             ctx.moveTo(meteor.x, meteor.y);
             ctx.lineTo(tailX, tailY);
@@ -303,57 +256,151 @@ const mailtoUrl = `mailto:deadcat@dcat.sanyyao.com?subject=${mailSubject}&body=$
             ctx.lineWidth = 2;
             ctx.globalAlpha = 1;
             ctx.stroke();
-
             meteor.x += Math.cos(meteor.angle) * meteor.speed;
             meteor.y += Math.sin(meteor.angle) * meteor.speed;
             meteor.alpha -= 0.015;
-
-            if (meteor.alpha <= 0 || meteor.x > w || meteor.y > h) {
-              meteor.active = false;
-            }
+            if (meteor.alpha <= 0 || meteor.x > w || meteor.y > h) meteor.active = false;
           }
 
           ctx.shadowBlur = 0;
           ctx.globalAlpha = 1;
           requestAnimationFrame(animate);
         }
-
         animate();
+
+        // resize 只属于当前实例：旧实例被新实例接管后，其 resize 由 token 屏蔽
+        const onResize = () => {
+          if (starAnimToken !== token) return;
+          const cw = window.innerWidth, ch = window.innerHeight;
+          canvas.width = cw * dpr; canvas.height = ch * dpr;
+          ctx?.scale(dpr, dpr);
+          w = cw; h = ch; initStars();
+        };
+        window.addEventListener('resize', onResize);
       }
 
-      // ── 通用果冻物理弹簧：所有 .pudding-touch 元素（卡片/胶囊/按钮/图标）──
-      // 与头像同参数（k=22.9, c=7.67, 点击 v0=-1.1, 1.2s 收敛，短行程），
-      // pointerdown 触发，rAF 驱动自适应帧率；动画结束清 inline transform 恢复 CSS hover。
-      document.querySelectorAll('.pudding-touch').forEach((el) => {
-        const spring = { scale: 1, vel: 0 };
-        let lastTime = 0;
-        let rafId: number | null = null;
+      // ── 滚动进度条 + 悬浮胶囊显隐 ──
+      // 切页后 scrollBar/navEl 换成新 DOM 节点，每次 reinit 重新抓取；监听只挂一次
+      let scrollBar: HTMLElement | null = null;
+      let navEl: HTMLElement | null = null;
+      let lastScrollY = 0;
+      let ticking = false;
 
-        const tick = (now: number) => {
-          const dt = Math.min((now - lastTime) / 1000, 1 / 30);
-          lastTime = now;
-          const force = -22.9 * (spring.scale - 1) - 7.67 * spring.vel;
-          spring.vel += force * dt;
-          spring.scale += spring.vel * dt;
+      function handleScroll() {
+        const currentY = window.scrollY;
+        const docH = document.documentElement.scrollHeight - window.innerHeight;
+        // 元素可能被切页替换，兜底重查
+        if (!scrollBar || !scrollBar.isConnected) scrollBar = document.getElementById('catScrollBar');
+        if (!navEl || !navEl.isConnected) navEl = document.getElementById('floatingNav');
+        if (scrollBar && docH > 0) {
+          const pct = Math.min(100, Math.max(0, (currentY / docH) * 100));
+          scrollBar.style.width = pct + '%';
+        }
+        if (navEl) {
+          if (currentY > 80 && currentY > lastScrollY + 8) navEl.classList.add('nav-hidden');
+          else if (currentY < lastScrollY - 6 || currentY <= 20) navEl.classList.remove('nav-hidden');
+        }
+        lastScrollY = currentY <= 0 ? 0 : currentY;
+        ticking = false;
+      }
 
-          (el as HTMLElement).style.transform = `scale(${spring.scale.toFixed(4)})`;
+      function bindScroll() {
+        scrollBar = document.getElementById('catScrollBar');
+        navEl = document.getElementById('floatingNav');
+        lastScrollY = window.scrollY;
+        if ((window as any).__scrollBound) return;
+        (window as any).__scrollBound = true;
+        window.addEventListener('scroll', () => {
+          if (!ticking) { window.requestAnimationFrame(handleScroll); ticking = true; }
+        }, { passive: true });
+      }
 
-          if (Math.abs(spring.scale - 1) < 0.0005 && Math.abs(spring.vel) < 0.0005) {
-            (el as HTMLElement).style.transform = '';
-            rafId = null;
-            return;
-          }
-          rafId = requestAnimationFrame(tick);
-        };
-
-        el.addEventListener('pointerdown', () => {
-          spring.vel = -1.1;
-          if (rafId === null) {
-            lastTime = performance.now();
+      // ── 通用果冻物理弹簧（.pudding-touch）──
+      // 与头像同参数（k=22.9, c=7.67, 点击 v0=-1.1, 1.2s 收敛，短行程）
+      function bindSprings() {
+        document.querySelectorAll('.pudding-touch').forEach((el) => {
+          if ((el as HTMLElement).dataset.springBound) return;
+          (el as HTMLElement).dataset.springBound = '1';
+          const spring = { scale: 1, vel: 0 };
+          let lastTime = 0;
+          let rafId: number | null = null;
+          const tick = (now: number) => {
+            const dt = Math.min((now - lastTime) / 1000, 1 / 30);
+            lastTime = now;
+            const force = -22.9 * (spring.scale - 1) - 7.67 * spring.vel;
+            spring.vel += force * dt;
+            spring.scale += spring.vel * dt;
+            (el as HTMLElement).style.transform = `scale(${spring.scale.toFixed(4)})`;
+            if (Math.abs(spring.scale - 1) < 0.0005 && Math.abs(spring.vel) < 0.0005) {
+              (el as HTMLElement).style.transform = '';
+              rafId = null;
+              return;
+            }
             rafId = requestAnimationFrame(tick);
-          }
+          };
+          el.addEventListener('pointerdown', () => {
+            spring.vel = -1.1;
+            if (rafId === null) { lastTime = performance.now(); rafId = requestAnimationFrame(tick); }
+          });
         });
-      });
+      }
+
+      // ── 全屏切页 Loader：ClientRouter 生命周期事件驱动 ──
+      // document 级监听 + loader 用 transition:persist 跨页存活（节点不变），所以只绑一次
+      function bindLoader() {
+        const pageLoader = document.getElementById('page-loader');
+        if (!pageLoader || (window as any).__loaderBound) return;
+        (window as any).__loaderBound = true;
+        const LOADER_MIN_MS = 2400; // 与 .paw-icon 的 breathe 动画周期（2.4s）对齐
+        let showStart = 0;
+        let hideTimer: number | null = null;
+
+        document.addEventListener('astro:before-preparation', (e) => {
+          // 站内锚点（同 URL 带 #hash）不是真正的切页，不弹 Loader，避免卡死
+          const from = (e as any)?.from?.href || location.href;
+          const to = (e as any)?.to?.href || '';
+          const sameDoc = to.replace(/#.*$/, '') === from.replace(/#.*$/, '');
+          if (sameDoc) return;
+          showStart = Date.now();
+          if (hideTimer) { clearTimeout(hideTimer); hideTimer = null; }
+          pageLoader.classList.add('active');
+          pageLoader.setAttribute('aria-hidden', 'false');
+        });
+
+        // 兜底保险：即使 astro:page-load 因任何原因没触发（导航中断/异常），超时强制隐藏
+        const MAX_SHOW_MS = 4000;
+        document.addEventListener('astro:before-preparation', () => {
+          if (hideTimer) { clearTimeout(hideTimer); }
+          hideTimer = window.setTimeout(() => {
+            pageLoader.classList.remove('active');
+            pageLoader.setAttribute('aria-hidden', 'true');
+            hideTimer = null;
+          }, MAX_SHOW_MS);
+        });
+
+        document.addEventListener('astro:page-load', () => {
+          const elapsed = Date.now() - showStart;
+          const wait = Math.max(0, LOADER_MIN_MS - elapsed);
+          if (hideTimer) { clearTimeout(hideTimer); }
+          hideTimer = window.setTimeout(() => {
+            pageLoader.classList.remove('active');
+            pageLoader.setAttribute('aria-hidden', 'true');
+            hideTimer = null;
+          }, wait);
+        });
+      }
+
+      // ── 首次加载 + 每次 SPA 切页后统一重建页面特效 ──
+      // 各函数内部都有幂等守卫（token / 标记位），重复调用无害
+      function reinitPageFx() {
+        bindScroll();
+        startStarfield();
+        bindSprings();
+        bindLoader();
+      }
+
+      document.addEventListener('astro:page-load', reinitPageFx);
+      reinitPageFx();
     </script>
 
     <style>
@@ -566,6 +613,105 @@ const mailtoUrl = `mailto:deadcat@dcat.sanyyao.com?subject=${mailSubject}&body=$
           radial-gradient(ellipse 80% 50% at 90% 110%, rgba(255, 209, 102, 0.16), transparent 60%),
           radial-gradient(ellipse 65% 65% at 75% 20%, rgba(48, 30, 60, 0.6), transparent 65%),
           linear-gradient(180deg, #0a0710 0%, #120b18 50%, #180f22 100%) !important;
+      }
+
+      /* ─────────────────────────────────────────────
+         全屏切页 Loader（猫爪呼吸 + 翡翠涟漪）
+         夜猫系：翡翠绿 cat-500 + 糖圆体 + 深墨蓝底
+         ───────────────────────────────────────────── */
+      .page-loader {
+        position: fixed;
+        inset: 0;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 24px;
+        background: rgba(6, 8, 16, 0.92);
+        /* 静态常驻模糊：不动画 backdrop-filter（WebKit 每帧重采样会卡 + 模糊迟到），
+           只淡 opacity（合成层友好）。visibility:hidden 时不渲染、不采样。 */
+        backdrop-filter: blur(14px) saturate(150%);
+        -webkit-backdrop-filter: blur(14px) saturate(150%);
+        opacity: 0;
+        visibility: hidden;
+        pointer-events: none;
+        transition: opacity 0.35s ease, visibility 0.35s ease;
+        z-index: 999;
+      }
+      .page-loader.active {
+        opacity: 1;
+        visibility: visible;
+        pointer-events: all;
+      }
+
+      .loader-stage {
+        position: relative;
+        width: 140px;
+        height: 140px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+
+      .paw-icon {
+        position: relative;
+        z-index: 2;
+        width: 54px;
+        height: 54px;
+        fill: var(--cat-500);
+        filter: drop-shadow(0 0 4px var(--cat-glow)) drop-shadow(0 0 14px var(--cat-glow));
+        animation: breathe 2.4s ease-in-out infinite;
+        animation-play-state: paused;
+      }
+      .page-loader.active .paw-icon { animation-play-state: running; }
+
+      @keyframes breathe {
+        0%, 100% { opacity: 0.5; transform: scale(0.9); }
+        50% { opacity: 1; transform: scale(1.08); }
+      }
+
+      .ripple {
+        --delay: 0s;
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        width: 46px;
+        height: 46px;
+        margin: -23px 0 0 -23px;
+        border-radius: 50%;
+        border: 1.5px solid var(--cat-500);
+        box-shadow: 0 0 10px var(--cat-glow), inset 0 0 10px var(--cat-glow);
+        opacity: 0;
+        z-index: 1;
+      }
+      .ripple.r2 { --delay: 0.7s; }
+      .ripple.r3 { --delay: 1.4s; }
+
+      .page-loader.active .ripple {
+        animation-name: ripple-pulse;
+        animation-duration: 2.1s;
+        animation-timing-function: ease-out;
+        animation-iteration-count: infinite;
+        animation-delay: var(--delay);
+      }
+
+      @keyframes ripple-pulse {
+        0%   { transform: scale(0.35); opacity: 0.75; }
+        100% { transform: scale(3.6); opacity: 0; }
+      }
+
+      .loader-text {
+        margin: 0;
+        font-size: 13px;
+        letter-spacing: 0.1em;
+        color: var(--cat-500);
+        font-family: var(--font-cute);
+        text-shadow: 0 0 8px var(--cat-glow);
+        opacity: 0.92;
+      }
+
+      @media (prefers-reduced-motion: reduce) {
+        .paw-icon, .ripple { animation: none !important; }
       }
     </style>
   </body>
