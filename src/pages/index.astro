@@ -17,6 +17,7 @@ const hasMore = articles.length > initialCount;
       <!-- 猫娘头像：rAF 物理弹簧自适应帧率弹性 + 打字机气泡 -->
       <div class="cat-fig" id="catAvatarBox" title="戳一戳死猫 (=^･ω･^=)">
         <div class="avatar-halo"></div>
+        <div class="avatar-ring" aria-hidden="true"></div>
         <img src="/assets/deadcat-avatar-q4.png" alt="死猫头像" width="200" height="200" class="cat-avatar" id="catAvatarImg" />
         <span class="cat-status-badge"><span></span> online</span>
 
@@ -38,6 +39,7 @@ const hasMore = articles.length > initialCount;
 
       <!-- 一言：语录卡片（独立一言，不与头像戳戳冲突） -->
       <blockquote class="quote-block" id="quote">
+        <span class="quote-paw" aria-hidden="true">🐾</span>
         <p class="quote-text" id="quote-text"><span class="quote-loading">喵……本喵在想一句好听的</span></p>
         <footer class="quote-from" id="quote-from"></footer>
       </blockquote>
@@ -191,6 +193,32 @@ const hasMore = articles.length > initialCount;
       border-color: var(--cat-300);
     }
 
+    /* 头像后方第二层「呼吸光环」：极慢 opacity + scale 微呼吸（合成层友好，零重排） */
+    .avatar-ring {
+      position: absolute;
+      inset: -14px;
+      z-index: 0;
+      border-radius: 50%;
+      border: 1px solid rgba(125, 240, 211, 0.22);
+      box-shadow:
+        0 0 0 1px rgba(255, 143, 171, 0.08),
+        inset 0 0 22px rgba(45, 212, 167, 0.12);
+      pointer-events: none;
+      opacity: 0.55;
+      transform: scale(1);
+      animation: ring-breathe 6.5s ease-in-out infinite;
+      will-change: opacity, transform;
+    }
+    .cat-fig:hover .avatar-ring {
+      opacity: 0.85;
+      border-color: rgba(125, 240, 211, 0.38);
+      animation-duration: 3.2s;
+    }
+    @keyframes ring-breathe {
+      0%, 100% { opacity: 0.45; transform: scale(0.98); }
+      50% { opacity: 0.8; transform: scale(1.03); }
+    }
+
     .cat-status-badge {
       position: absolute;
       bottom: 6px;
@@ -300,19 +328,36 @@ const hasMore = articles.length > initialCount;
       max-width: 580px;
       width: 100%;
       margin: 0 auto;
-      padding: 10px 18px;
+      padding: 16px 20px 16px 22px;
       border-left: 3px solid var(--cat-400);
-      background: rgba(16, 20, 39, 0.45);
+      background: rgba(16, 20, 39, 0.5);
       backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
       border-radius: 0 var(--r-sm) var(--r-sm) 0;
-      border-top: 1px solid rgba(238, 241, 250, 0.05);
-      border-right: 1px solid rgba(238, 241, 250, 0.05);
-      border-bottom: 1px solid rgba(238, 241, 250, 0.05);
+      border-top: 1px solid rgba(238, 241, 250, 0.06);
+      border-right: 1px solid rgba(238, 241, 250, 0.06);
+      border-bottom: 1px solid rgba(238, 241, 250, 0.06);
+      box-shadow:
+        inset 0 1px 0 rgba(255, 255, 255, 0.05),
+        0 10px 28px -14px rgba(0, 0, 0, 0.55);
       display: flex;
       align-items: baseline;
       justify-content: space-between;
       gap: 14px;
       position: relative;
+    }
+    /* 左上角猫爪印：死猫手写便签的专属落款 */
+    .quote-paw {
+      position: absolute;
+      top: -10px;
+      left: -10px;
+      font-size: 1.1rem;
+      line-height: 1;
+      color: var(--cat-400);
+      opacity: 0.7;
+      filter: drop-shadow(0 2px 6px rgba(45, 212, 167, 0.3));
+      transform: rotate(-12deg);
+      pointer-events: none;
     }
     .quote-text {
       font-family: var(--font-serif);
