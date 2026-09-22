@@ -405,15 +405,15 @@ a:hover { color: var(--cat-300); }
    ───────────────────────────────────────────── */
 .correction-tape-group {
   display: inline;
-  white-space: nowrap;
   cursor: help;
 }
 .correction-tape {
   display: inline-block;
-  width: 1em;
+  /* 不设 width：让每个字符用自己的天然宽度（半角 R/1/8 不再被撑成 1em 留缝） */
+  min-width: 0.5em;
   height: 1em;
   line-height: 1em;
-  margin: 0 1px;
+  margin: 0 0.5px;
   border-radius: 4px; /* 小圆角 */
   background: rgba(45, 212, 167, 0.6); /* 文章主题翡翠绿 --cat-500 的暗版 */
   color: transparent;
