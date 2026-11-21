@@ -1,0 +1,384 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>值夜 · 会跟人的房间</title>
+<style>
+  :root{
+    --ink:#070b12; --ink2:#0b1220; --jade:#4ad3a0; --amber:#ffb35c;
+    --rim:rgba(126,168,220,.22);
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;height:100%;background:var(--ink);color:#b9c7db;
+    font-family:"Source Han Sans SC","Noto Sans SC",system-ui,-apple-system,sans-serif;
+    overflow:hidden;cursor:crosshair}
+  #room{position:relative;width:100vw;height:100vh;overflow:hidden;background:
+    radial-gradient(120% 90% at 18% 78%, #101a29 0%, #0a1120 45%, #070b12 100%)}
+
+  /* ---------- 屋子 ---------- */
+  #scene{position:absolute;inset:0;display:flex;align-items:center;justify-content:center}
+  #scene svg{height:100%;width:100%;max-height:100vh;display:block}
+
+  /* ---------- 光：跟着指针走 ---------- */
+  #light{position:absolute;left:0;top:0;width:920px;height:920px;border-radius:50%;
+    pointer-events:none;mix-blend-mode:screen;will-change:transform;
+    background:radial-gradient(circle at center,
+      rgba(255,196,120,.32) 0%, rgba(255,168,90,.17) 26%,
+      rgba(255,150,80,.07) 48%, rgba(255,140,70,0) 68%);
+    transform:translate3d(-50%,-50%,0);
+    filter:blur(6px)}
+  /* 屋子中间那盏灯的固定暖晕 */
+  #lampglow{position:absolute;pointer-events:none;mix-blend-mode:screen;
+    width:620px;height:620px;border-radius:50%;
+    background:radial-gradient(circle,rgba(255,178,92,.30) 0%,rgba(255,150,80,.12) 34%,rgba(255,140,70,0) 66%);
+    filter:blur(4px);opacity:.9}
+  /* 暗角：光之外更暗一档，但不吃到全黑 */
+  #vignette{position:absolute;inset:0;pointer-events:none;
+    background:radial-gradient(115% 95% at 50% 50%, rgba(0,0,0,0) 38%, rgba(2,5,10,.72) 100%)}
+
+  /* ---------- 灰尘 ---------- */
+  .dust{position:absolute;width:2px;height:2px;border-radius:50%;background:#ffd9a8;
+    opacity:.0;pointer-events:none;mix-blend-mode:screen;
+    animation:float linear infinite}
+  @keyframes float{
+    0%{opacity:0;transform:translate3d(0,0,0)}
+    15%{opacity:.55}
+    70%{opacity:.42}
+    100%{opacity:0;transform:translate3d(14px,-120px,0)}
+  }
+
+  /* ---------- 猫：会呼吸 ---------- */
+  #cat{transform-origin:560px 470px;animation:breathe 4.6s cubic-bezier(.42,0,.32,1) infinite alternate}
+  @keyframes breathe{
+    from{transform:translateY(0) scaleY(1)}
+    to{transform:translateY(-1.4px) scaleY(1.012)}
+  }
+  #eyes{transform-origin:560px 300px;animation:blink 8.4s cubic-bezier(.5,0,.4,1) infinite}
+  @keyframes blink{
+    0%,86%,100%{transform:scaleY(1)}
+    90%{transform:scaleY(.06)}
+    94%{transform:scaleY(1)}
+  }
+  #earL{transform-origin:512px 248px;animation:earL 10s cubic-bezier(.34,1.4,.5,1) infinite}
+  #earR{transform-origin:608px 248px;animation:earR 12.5s cubic-bezier(.34,1.4,.5,1) infinite}
+  @keyframes earL{0%,52%,100%{transform:rotate(0)}56%{transform:rotate(-7deg)}64%{transform:rotate(-2deg)}}
+  @keyframes earR{0%,66%,100%{transform:rotate(0)}70%{transform:rotate(4.8deg)}78%{transform:rotate(1.2deg)}}
+  #tail{transform-origin:648px 452px;animation:tail 5.8s cubic-bezier(.45,0,.35,1) infinite alternate}
+  @keyframes tail{from{transform:rotate(-3.6deg)}to{transform:rotate(4.6deg)}}
+
+  /* 点一下：挤压拉伸 */
+  #catwrap.squash #cat{animation:squash .52s cubic-bezier(.22,.94,.24,1) both, breathe 4.6s cubic-bezier(.42,0,.32,1) .52s infinite alternate}
+  @keyframes squash{
+    0%{transform:scale(1,1)}
+    32%{transform:scale(1.055,.945)}
+    58%{transform:scale(.978,1.022)}
+    80%{transform:scale(1.012,.99)}
+    100%{transform:scale(1,1)}
+  }
+
+  /* ---------- 字 ---------- */
+  #caption{position:absolute;left:50%;bottom:26px;transform:translateX(-50%);
+    text-align:center;pointer-events:none;user-select:none;white-space:nowrap}
+  #caption .t{display:inline-block;font-size:13px;letter-spacing:.22em;color:#8fa3bd;
+    padding:7px 18px;border-radius:999px;
+    background:rgba(12,20,32,.55);backdrop-filter:blur(10px);
+    border:none;box-shadow:0 0 0 1px var(--rim),0 1px 0 rgba(255,255,255,.04) inset;
+    transition:color .5s}
+  #caption .h{display:block;margin-top:9px;font-size:11.5px;letter-spacing:.1em;color:#5c6d85}
+  body.near #caption .t{color:var(--amber);box-shadow:0 0 0 1px rgba(255,179,92,.35),0 0 18px rgba(255,179,92,.12)}
+  #back{position:absolute;right:18px;bottom:20px;font-size:11.5px;letter-spacing:.08em;
+    color:#5c6d85;text-decoration:none;padding:6px 12px;border-radius:999px;
+    background:rgba(12,20,32,.5);box-shadow:0 0 0 1px rgba(126,168,220,.16);
+    transition:color .35s,box-shadow .35s}
+  #back:hover{color:var(--jade);box-shadow:0 0 0 1px rgba(74,211,160,.35)}
+  @media (max-width:620px){#caption .t{font-size:11px;letter-spacing:.12em}#caption .h{display:none}}
+</style>
+</head>
+<body>
+<div id="room">
+  <div id="scene">
+    <svg id="art" viewBox="0 0 1000 620" preserveAspectRatio="xMidYMid slice" aria-label="值夜：一间暗屋子，桌上坐着一只黑猫">
+      <defs>
+        <linearGradient id="gWall" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stop-color="#0b1220"/><stop offset="1" stop-color="#060a11"/>
+        </linearGradient>
+        <linearGradient id="gDesk" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stop-color="#1a2333"/><stop offset="1" stop-color="#0e1522"/>
+        </linearGradient>
+        <linearGradient id="gWin" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stop-color="#16283f"/><stop offset="1" stop-color="#0d1a2b"/>
+        </linearGradient>
+        <linearGradient id="gCat" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stop-color="#151c28"/><stop offset="1" stop-color="#0c111a"/>
+        </linearGradient>
+        <linearGradient id="gShade" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stop-color="#2b3446"/><stop offset="1" stop-color="#171f2c"/>
+        </linearGradient>
+        <radialGradient id="gEye" cx=".5" cy=".4" r=".7">
+          <stop offset="0" stop-color="#7bf0c2"/><stop offset=".55" stop-color="#3ec894"/><stop offset="1" stop-color="#1d7d5c"/>
+        </radialGradient>
+        <linearGradient id="gShadeR" x1="0" y1="0" x2="1" y2="0">
+          <stop offset="0" stop-color="#04070c" stop-opacity="0"/>
+          <stop offset=".55" stop-color="#04070c" stop-opacity=".28"/>
+          <stop offset="1" stop-color="#04070c" stop-opacity=".72"/>
+        </linearGradient>
+        <linearGradient id="gRimL" x1="0" y1="0" x2="1" y2="0">
+          <stop offset="0" stop-color="#ffcf96" stop-opacity=".38"/>
+          <stop offset=".55" stop-color="#ffcf96" stop-opacity=".06"/>
+          <stop offset="1" stop-color="#ffcf96" stop-opacity="0"/>
+        </linearGradient>
+        <clipPath id="clipHead"><circle cx="560" cy="300" r="82"/></clipPath>
+        <clipPath id="clipBody"><path d="M462 470 C452 414 464 356 508 330 L612 330 C656 356 668 414 658 470 Z"/></clipPath>
+        <filter id="soft" x="-40%" y="-40%" width="180%" height="180%">
+          <feGaussianBlur stdDeviation="7"/>
+        </filter>
+        <filter id="soft2" x="-60%" y="-60%" width="220%" height="220%">
+          <feGaussianBlur stdDeviation="16"/>
+        </filter>
+      </defs>
+
+      <!-- 墙 -->
+      <rect x="0" y="0" width="1000" height="620" fill="url(#gWall)"/>
+
+      <!-- 窗（冷） -->
+      <g opacity=".95">
+        <rect x="742" y="86" width="196" height="272" rx="6" fill="url(#gWin)"/>
+        <rect x="742" y="86" width="196" height="272" rx="6" fill="none" stroke="#2a3a52" stroke-width="3"/>
+        <line x1="840" y1="88" x2="840" y2="356" stroke="#2a3a52" stroke-width="3"/>
+        <line x1="744" y1="222" x2="936" y2="222" stroke="#2a3a52" stroke-width="3"/>
+        <circle cx="900" cy="132" r="13" fill="#cfe0f5" opacity=".5"/>
+        <circle cx="900" cy="132" r="26" fill="#9fc0e6" opacity=".14" filter="url(#soft)"/>
+        <path d="M756 356 L756 400 L930 400 L930 356 Z" fill="#0d1626" opacity=".8"/>
+      </g>
+
+      <!-- 桌面 -->
+      <rect x="0" y="470" width="1000" height="150" fill="url(#gDesk)"/>
+      <rect x="0" y="470" width="1000" height="2" fill="#26334a" opacity=".9"/>
+
+      <!-- 台灯（暖） -->
+      <g id="lamp">
+        <ellipse cx="212" cy="386" rx="74" ry="60" fill="#ffb35c" opacity=".13" filter="url(#soft2)"/>
+        <rect x="205" y="386" width="14" height="84" rx="6" fill="#1d2635"/>
+        <ellipse cx="212" cy="470" rx="46" ry="8" fill="#1b2433"/>
+        <path d="M150 386 L274 386 L248 322 L176 322 Z" fill="url(#gShade)"/>
+        <path d="M150 386 L274 386 L248 322 L176 322 Z" fill="none" stroke="#38455c" stroke-width="2"/>
+        <ellipse cx="212" cy="386" rx="62" ry="10" fill="#ffcf96" opacity=".75"/>
+        <ellipse cx="212" cy="386" rx="62" ry="10" fill="#ffe6c2" opacity=".35" filter="url(#soft)"/>
+      </g>
+
+      <!-- 杯子 -->
+      <g opacity=".95">
+        <path d="M772 470 L772 424 Q772 414 782 414 L818 414 Q828 414 828 424 L828 470 Z" fill="#1d2635"/>
+        <path d="M828 430 q16 4 16 16 q0 12 -16 14" fill="none" stroke="#2b3547" stroke-width="6"/>
+        <ellipse cx="800" cy="416" rx="30" ry="7" fill="#2b3547"/>
+        <path d="M790 404 q6 -10 0 -20 M806 404 q6 -10 0 -20" stroke="#4a5a72" stroke-width="2" fill="none" opacity=".5"/>
+      </g>
+
+      <!-- 猫 -->
+      <g id="catwrap">
+        <ellipse cx="560" cy="474" rx="128" ry="14" fill="#03060b" opacity=".65"/>
+        <g id="cat">
+          <!-- 尾 -->
+          <g id="tail">
+            <path d="M648 452 C700 452 726 430 720 398 C714 372 690 366 678 380"
+                  fill="none" stroke="url(#gCat)" stroke-width="26" stroke-linecap="round"/>
+            <path d="M678 380 q-6 10 2 14" fill="none" stroke="#2c3648" stroke-width="4" stroke-linecap="round" opacity=".7"/>
+          </g>
+          <!-- 身体 -->
+          <path d="M462 470 C452 414 464 356 508 330 L612 330 C656 356 668 414 658 470 Z"
+                fill="url(#gCat)" stroke="#232d3d" stroke-width="2"/>
+          <!-- 胸口白毛 -->
+          <path d="M560 344 C588 344 604 372 598 404 C594 432 574 448 560 448 C546 448 526 432 522 404 C516 372 532 344 560 344 Z"
+                fill="#dbe5f2" opacity=".92"/>
+          <path d="M560 344 C588 344 604 372 598 404 C594 432 574 448 560 448 C546 448 526 432 522 404 C516 372 532 344 560 344 Z"
+                fill="none" stroke="#a9b8cc" stroke-width="1" opacity=".35"/>
+          <!-- 体块明暗：灯在左，右侧压暗一档 -->
+          <rect x="500" y="318" width="170" height="160" fill="url(#gShadeR)" clip-path="url(#clipBody)"/>
+          <path d="M508 330 C464 356 452 414 462 470" fill="none" stroke="url(#gRimL)" stroke-width="3" stroke-linecap="round"/>
+          <!-- 前爪 -->
+          <ellipse cx="512" cy="462" rx="26" ry="14" fill="#161e2b"/>
+          <ellipse cx="608" cy="462" rx="26" ry="14" fill="#161e2b"/>
+          <path d="M502 458 l0 8 M512 456 l0 9 M522 458 l0 8" stroke="#3a4759" stroke-width="2" stroke-linecap="round"/>
+          <path d="M598 458 l0 8 M608 456 l0 9 M618 458 l0 8" stroke="#3a4759" stroke-width="2" stroke-linecap="round"/>
+
+          <!-- 头 -->
+          <g id="head" style="transform-origin:560px 340px">
+            <!-- 耳朵 -->
+            <g id="earL"><path d="M500 262 L508 196 L548 236 Z" fill="#141b26" stroke="#2b3546" stroke-width="2"/>
+              <path d="M510 254 L514 214 L536 238 Z" fill="#c9788f" opacity=".55"/></g>
+            <g id="earR"><path d="M620 262 L612 196 L572 236 Z" fill="#141b26" stroke="#2b3546" stroke-width="2"/>
+              <path d="M610 254 L606 214 L584 238 Z" fill="#c9788f" opacity=".55"/></g>
+            <!-- 脸 -->
+            <circle cx="560" cy="300" r="82" fill="url(#gCat)" stroke="#232d3d" stroke-width="2"/>
+            <!-- 脸部明暗 + 左缘轮廓光 -->
+            <rect x="500" y="212" width="160" height="180" fill="url(#gShadeR)" clip-path="url(#clipHead)"/>
+            <circle cx="560" cy="300" r="81" fill="none" stroke="url(#gRimL)" stroke-width="3"/>
+            <!-- 眼 -->
+            <g id="eyes">
+              <ellipse cx="528" cy="298" rx="23" ry="27" fill="url(#gEye)"/>
+              <ellipse cx="592" cy="298" rx="23" ry="27" fill="url(#gEye)"/>
+              <ellipse cx="528" cy="298" rx="23" ry="27" fill="none" stroke="#0b1f18" stroke-width="2" opacity=".5"/>
+              <ellipse cx="592" cy="298" rx="23" ry="27" fill="none" stroke="#0b1f18" stroke-width="2" opacity=".5"/>
+              <g id="pupils">
+                <ellipse cx="528" cy="298" rx="5" ry="20" fill="#06120e"/>
+                <ellipse cx="592" cy="298" rx="5" ry="20" fill="#06120e"/>
+                <circle cx="522" cy="290" r="4.2" fill="#eafff6" opacity=".85"/>
+                <circle cx="586" cy="290" r="4.2" fill="#eafff6" opacity=".85"/>
+              </g>
+            </g>
+            <!-- 鼻嘴 -->
+            <path d="M560 328 l-9 -8 l18 0 Z" fill="#c9788f"/>
+            <path d="M560 328 l0 8 M560 336 q-9 8 -17 2 M560 336 q9 8 17 2" stroke="#3d4a5e" stroke-width="2.4" fill="none" stroke-linecap="round"/>
+            <!-- 胡须 -->
+            <g stroke="#5d6f8a" stroke-width="1.8" stroke-linecap="round" opacity=".75">
+              <path d="M486 322 L436 314"/><path d="M486 332 L434 334"/><path d="M488 342 L442 352"/>
+              <path d="M634 322 L684 314"/><path d="M634 332 L686 334"/><path d="M632 342 L678 352"/>
+            </g>
+          </g>
+        </g>
+      </g>
+    </svg>
+  </div>
+
+  <div id="lampglow"></div>
+  <div id="light"></div>
+  <div id="vignette"></div>
+
+  <div id="caption">
+    <span class="t">把指针移进屋子 · 光会跟着你走</span>
+    <span class="h">猫的瞳孔跟着光 · 点它一下会挤一下</span>
+  </div>
+  <a id="back" href="https://dcat.sanyyao.com/">← 回书房</a>
+</div>
+
+<script>
+(function(){
+  var room = document.getElementById('room');
+  var light = document.getElementById('light');
+  var lampglow = document.getElementById('lampglow');
+  var svg = document.getElementById('art');
+  var pupils = document.getElementById('pupils');
+  var head = document.getElementById('head');
+  var catwrap = document.getElementById('catwrap');
+
+  // 台灯的固定晕，按 viewBox 坐标换算到屏幕
+  function centerOf(sel){
+    var el = document.querySelector(sel);
+    if (!el) return {x: innerWidth/2, y: innerHeight/2};
+    var r = el.getBoundingClientRect();
+    return {x: r.left + r.width/2, y: r.top + r.height/2};
+  }
+  function layoutLamp(){
+    var p = centerOf('#lamp');
+    lampglow.style.left = (p.x - 310) + 'px';
+    lampglow.style.top  = (p.y - 310) + 'px';
+  }
+  // 竖屏手机：镜头推到猫身上，并保证整只猫（含尾巴）都在框里
+  function layoutView(){
+    var aspect = innerWidth / innerHeight;
+    if (aspect < 0.85){
+      var w = Math.max(620 * aspect, 312);
+      svg.setAttribute('preserveAspectRatio', 'xMidYMid meet');
+      svg.setAttribute('viewBox', (579 - w/2).toFixed(1) + ' 0 ' + w.toFixed(1) + ' 620');
+    } else {
+      svg.setAttribute('preserveAspectRatio', 'xMidYMid slice');
+      svg.setAttribute('viewBox', '0 0 1000 620');
+    }
+  }
+  layoutView();
+  layoutLamp();
+  window.addEventListener('resize', function(){ layoutView(); layoutLamp(); });
+
+  // 灰尘
+  var dustHost = room, i, d;
+  for (i = 0; i < 30; i++){
+    d = document.createElement('div');
+    d.className = 'dust';
+    d.style.left = (Math.random() * 100) + 'vw';
+    d.style.top  = (62 + Math.random() * 38) + 'vh';
+    d.style.animationDuration = (7 + Math.random() * 9).toFixed(1) + 's';
+    d.style.animationDelay = (-Math.random() * 12).toFixed(1) + 's';
+    var s = (1 + Math.random() * 2).toFixed(1);
+    d.style.width = s + 'px'; d.style.height = s + 'px';
+    dustHost.appendChild(d);
+  }
+
+  // 指针 → 光 + 瞳孔
+  var target = {x: innerWidth * .5, y: innerHeight * .62};
+  var cur = {x: target.x, y: target.y};
+  var pupilCur = 0;
+
+  function onMove(e){
+    var p = e.touches ? (e.touches[0] || e) : e;
+    if (p.clientX === undefined) return;
+    target.x = p.clientX; target.y = p.clientY;
+  }
+  window.addEventListener('mousemove', onMove, {passive:true});
+  window.addEventListener('pointermove', onMove, {passive:true});
+  window.addEventListener('pointerdown', onMove, {passive:true});
+  window.addEventListener('touchstart', onMove, {passive:true});
+  window.addEventListener('touchmove', onMove, {passive:true});
+
+  // 手机没有「指针」：字换成手指
+  if (window.matchMedia && matchMedia('(hover: none)').matches){
+    var t = document.querySelector('#caption .t');
+    if (t) t.textContent = '用手指点亮这间屋子 · 光跟着你走';
+  }
+
+  function frame(){
+    // 光：高阻尼，慢慢跟上来
+    cur.x += (target.x - cur.x) * 0.085;
+    cur.y += (target.y - cur.y) * 0.085;
+    light.style.transform = 'translate3d(' + (cur.x - 460) + 'px,' + (cur.y - 460) + 'px,0)';
+
+    // 瞳孔：跟着光标的方向偏，最多 7 像素
+    var e = centerOf('#eyes');
+    var eyeCx = e.x, eyeCy = e.y;
+    var dx = (cur.x - eyeCx) / 55, dy = (cur.y - eyeCy) / 70;
+    dx = Math.max(-7, Math.min(7, dx));
+    dy = Math.max(-5, Math.min(5, dy));
+    pupilCur += (1 - pupilCur) * 0.12;
+    pupils.setAttribute('transform', 'translate(' + (dx*pupilCur).toFixed(2) + ',' + (dy*pupilCur).toFixed(2) + ')');
+
+    // 头：朝光偏一点点，最大 2.6 度
+    var rot = Math.max(-2.6, Math.min(2.6, (cur.x - eyeCx) / 190));
+    head.style.transform = 'rotate(' + rot.toFixed(2) + 'deg)';
+
+    requestAnimationFrame(frame);
+  }
+  requestAnimationFrame(frame);
+
+  // 靠近灯 → 字亮起来
+  var lampBox = {x:0,y:0};
+  function lampBoxUpdate(){
+    var p = centerOf('#lamp');
+    lampBox.x = p.x; lampBox.y = p.y;
+  }
+  lampBoxUpdate();
+  window.addEventListener('resize', lampBoxUpdate);
+  setInterval(function(){
+    var dd = Math.hypot(target.x - lampBox.x, target.y - lampBox.y);
+    document.body.classList.toggle('near', dd < 260);
+  }, 120);
+
+  // 点猫 → 挤一下
+  catwrap.style.cursor = 'pointer';
+  catwrap.addEventListener('click', function(){
+    catwrap.classList.remove('squash');
+    void catwrap.offsetWidth;
+    catwrap.classList.add('squash');
+    setTimeout(function(){ catwrap.classList.remove('squash'); }, 620);
+  });
+
+  // 钥匙：K 键开关提示字，方便截图
+  window.addEventListener('keydown', function(e){
+    if (e.key === 'k' || e.key === 'K') document.body.classList.toggle('clean');
+  });
+  var st = document.createElement('style');
+  st.textContent = 'body.clean #caption{opacity:0}';
+  document.head.appendChild(st);
+})();
+</script>
+</body>
+</html>
