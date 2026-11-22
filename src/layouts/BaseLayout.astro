@@ -83,6 +83,10 @@ const mailtoUrl = `mailto:deadcat@dcat.sanyyao.com?subject=${mailSubject}&body=$
             <div class="glass-shine"></div>
             <span class="nav-text">值夜</span>
           </a>
+          <a href="/zoom/" class="liquid-capsule nav-capsule pudding-touch" title="放大才看得见：点一下凑近鼻头">
+            <div class="glass-shine"></div>
+            <span class="nav-text">凑近</span>
+          </a>
         </nav>
       </div>
     </div>
@@ -531,6 +535,15 @@ const mailtoUrl = `mailto:deadcat@dcat.sanyyao.com?subject=${mailSubject}&body=$
         font-size: 0.92rem;
         font-family: var(--font-cute);
         font-weight: 700;
+        white-space: nowrap;
+        flex-shrink: 0;
+      }
+      /* 窄屏：四颗胶囊要一行站得下，品牌名让位给功能键（否则会挤成竖排、压到头像上） */
+      @media (max-width: 620px) {
+        .brand-name { display: none; }
+        .brand-capsule { padding: 8px 14px; }
+        .nav-capsules-group { gap: 7px; }
+        .nav-capsule { padding: 7px 13px; font-size: 0.84rem; }
       }
       .nav-capsule:hover {
         color: #fff;
