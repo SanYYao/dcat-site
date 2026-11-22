@@ -24,6 +24,10 @@
     will-change: transform;
   }
   #wrap.zoomed #stage { transform: scale(4.2); }
+  /* 窄屏：舞台本来就只有 390px 宽，4.2 倍出来的鼻头才一指盖大——手机要更近才叫凑近 */
+  @media (max-width: 700px) {
+    #wrap.zoomed #stage { transform: scale(7.6); }
+  }
   #stage svg { display: block; width: 100%; height: auto; }
 
   #hint {
